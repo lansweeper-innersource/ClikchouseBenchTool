@@ -13,23 +13,21 @@ export const printResults = async (queryResults: QueryModule[]) => {
     "Rows to results",
     "RPS",
   ];
-  let rows: any[] = [];
   queryResults.forEach((result) => {
-    const queryRow = result.queries
-      .map((q) => [
-        q.name,
-        `${Math.round(q.runStatisticsResults?.elapsed! * 100) / 100}s`,
-        q.runStatisticsResults?.bytesReadStr,
-        q.runStatisticsResults?.rowsRead,
-        q.benchResult?.queriesPerSecond,
-        q.benchResult?.megabytesPlacedToResult,
-        q.benchResult?.rowsPlacedToResults,
-        q.benchResult?.serverRowReadsPerSecond,
-      ])
-      .flat();
-    rows.push(queryRow);
+    md.push({ h2: result.name });
+    const queryRow: any[] = result.queries.map((q) => [
+      q.name,
+      `${Math.round(q.runStatisticsResults?.elapsed! * 100) / 100}s`,
+      q.runStatisticsResults?.bytesReadStr,
+      q.runStatisticsResults?.rowsRead.toString(),
+      q.benchResult?.queriesPerSecond.toString(),
+      q.benchResult?.megabytesPlacedToResult.toString(),
+      q.benchResult?.rowsPlacedToResults.toString(),
+      q.benchResult?.serverRowReadsPerSecond.toString(),
+    ]);
+
+    md.push({ table: { headers, rows: queryRow } });
   });
-  md.push({ table: { headers, rows } });
   const encoder = new TextEncoder();
   const data = encoder.encode(json2md(md));
   await Deno.writeFile("./results.md", data);

@@ -22,7 +22,7 @@ export interface QueryModule {
   queries: QueryModuleQuery[];
 }
 
-// Check if clickhouse executable exists and download it
+// Check if clickhouse executable exists
 try {
   await Deno.stat("./clickhouse");
 } catch (err) {
@@ -51,11 +51,11 @@ for await (const file of queryFilesIterable) {
     const queryModuleIterable = Deno.readDir(
       `${config.queryDirectory}/${file.name}`
     );
+    const module: QueryModule = {
+      name: file.name,
+      queries: [],
+    };
     for await (const moduleQuery of queryModuleIterable) {
-      const module: QueryModule = {
-        name: moduleQuery.name,
-        queries: [],
-      };
       if (moduleQuery.isFile && moduleQuery.name.split(".").pop() === "sql") {
         const sqlContent = await Deno.readFile(
           `${config.queryDirectory}/${file.name}/${moduleQuery.name}`
@@ -69,11 +69,10 @@ for await (const file of queryFilesIterable) {
           ),
         });
       }
-      queryModules.push(module);
     }
+    queryModules.push(module);
   }
 }
-
 for (const module of queryModules) {
   log.info(`Running module ${module.name}`);
   for (const moduleQuery of module.queries) {
