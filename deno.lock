@@ -25,5 +25,16 @@
     "https://esm.sh/v106/json2md@2.0.0/deno/json2md.js": "e20343b04d96a8b4834be4fde9584d21f1c6d1aaa8889f4dc82a095fbd4e58cb",
     "https://esm.sh/v106/jsonpath-plus@7.2.0/deno/jsonpath-plus.js": "40bfeee8d122d4efd4b79fe8b27f9387041ea9252c3f62706319f8d53e3645e4",
     "https://esm.sh/v106/jsonpath-plus@7.2.0/src/jsonpath.d.ts": "12e131b5f9ecafe5d0d3386cd33ce57842ecad58a486e7e5e242f4e3b1ec404b"
+  },
+  "npm": {
+    "specifiers": {
+      "commander@10.0.0": "commander@10.0.0"
+    },
+    "packages": {
+      "commander@10.0.0": {
+        "integrity": "sha512-zS5PnTI22FIRM6ylNW8G4Ap0IEOyk62fhLSD0+uHRT9McRCLGpkVNvao4bjimpK/GShynyQkFFxHhwMcETmduA==",
+        "dependencies": {}
+      }
+    }
   }
 }
