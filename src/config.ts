@@ -1,4 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
 import { parse, stringify } from "https://deno.land/std/encoding/toml.ts";
 import {
   Confirm,
@@ -66,13 +65,19 @@ export const getConfig = async (): Promise<Config> => {
         params: { siteId: "123" },
         queryDirectory: "queries",
       };
-      console.log(promptConfig);
       const tomlConfig = stringify(
         promptConfig as unknown as Record<string, unknown>
       );
       const encoder = new TextEncoder();
       const data = encoder.encode(tomlConfig);
       await Deno.writeFile("./config.toml", data);
+      await Deno.mkdir("./queries");
+      await Deno.mkdir("./queries/001_demo_query");
+
+      await Deno.writeFile(
+        "./queries/001_demo_query/demo_query.sql",
+        encoder.encode("SELECT 1 = 1")
+      );
 
       const configFile = await Deno.readTextFile("./config.toml");
       config = parse(configFile) as unknown as Config;

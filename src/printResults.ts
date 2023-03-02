@@ -59,14 +59,27 @@ export const printResults = async (queryResults: QueryModule[]) => {
         .filter((q) => q.executed)
         .map((q) => [
           q.name,
-          arraySplit(q.indexResults?.MinMax.granules),
-          arraySplit(q.indexResults?.MinMax.parts),
-          (q.indexResults?.Partition.keys || []).join(", "),
-          arraySplit(q.indexResults?.Partition.parts),
-          arraySplit(q.indexResults?.Partition.granules),
-          (q.indexResults?.PrimaryKey.keys || []).join(", "),
-          arraySplit(q.indexResults?.PrimaryKey.parts),
-          arraySplit(q.indexResults?.PrimaryKey.granules),
+          ...(q.indexResults?.MinMax
+            ? [
+                arraySplit(q.indexResults.MinMax.granules),
+                arraySplit(q.indexResults.MinMax.parts),
+              ]
+            : []),
+          ...(q.indexResults?.Partition
+            ? [
+                (q.indexResults?.Partition.keys || []).join(", "),
+                arraySplit(q.indexResults?.Partition.parts),
+                arraySplit(q.indexResults?.Partition.granules),
+              ]
+            : []),
+          ,
+          ...(q.indexResults?.PrimaryKey
+            ? [
+                (q.indexResults?.PrimaryKey.keys || []).join(", "),
+                arraySplit(q.indexResults?.PrimaryKey.parts),
+                arraySplit(q.indexResults?.PrimaryKey.granules),
+              ]
+            : []),
         ]);
       md.push({
         table: {
