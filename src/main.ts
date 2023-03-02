@@ -6,6 +6,7 @@ import { printResults } from "./printResults.ts";
 import { runDbBenchmark } from "./benchmark/dbBenchmark.ts";
 import { runQueryBenchmark } from "./benchmark/runBenchmark.ts";
 import { getQueryExplain } from "./benchmark/explainBenchmark.ts";
+import { downloadClickhouse } from "./utils.ts";
 
 // Program settings
 initProgram();
@@ -19,7 +20,13 @@ try {
   log.info(
     `Run: "curl https://clickhouse.com/ | sh" to download the official clickhouse binary`
   );
-  Deno.exit(-1);
+  try {
+    await downloadClickhouse();
+    log.info("Clickhouse executable downloaded!");
+  } catch (err) {
+    log.error("Error downloading clickhouse executable");
+    Deno.exit(-1);
+  }
 }
 
 const config = await getConfig();

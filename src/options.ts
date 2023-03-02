@@ -1,4 +1,4 @@
-import { program } from "npm:commander@10.0.0";
+import { program } from "https://esm.sh/commander@10.0.0";
 
 export interface ProgramParams {
   module?: string;

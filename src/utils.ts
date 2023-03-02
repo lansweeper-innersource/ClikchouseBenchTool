@@ -38,3 +38,19 @@ export const runQuery = async (
   const parsedResult = JSON.parse(resultString);
   return parsedResult;
 };
+
+export const downloadClickhouse = async () => {
+  const p = Deno.run({
+    cmd: ["curl", "https://clickhouse.com/"],
+    stdout: "piped",
+  });
+  await p.status();
+  const rawOutput = await p.output();
+
+  await Deno.writeFile("./download.sh", rawOutput);
+  const installChCommand = Deno.run({
+    cmd: ["sh", "./download.sh"],
+  });
+  await installChCommand.status();
+  await Deno.remove("./download.sh");
+};

@@ -1,16 +1,15 @@
 import { readLines } from "https://deno.land/std/io/read_lines.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
 
 import { Config, getConfig } from "../config.ts";
 import { ProgramParams } from "../options.ts";
 
 export interface QueryBenchResult {
-  numExecutions: number;
-  queriesPerSecond: number;
-  serverRowReadsPerSecond: number;
-  serverMegabytesReadsPerSecond: number;
-  rowsPlacedToResults: number;
-  megabytesPlacedToResult: number;
+  executions: number;
+  qps: number;
+  rps: number;
+  MiBs: number;
+  resultRps: number;
+  resultMiBs: number;
 }
 
 const parseBenchmarkResult = async (
@@ -19,12 +18,12 @@ const parseBenchmarkResult = async (
   const config = await getConfig();
   let output = "";
   const results: QueryBenchResult = {
-    megabytesPlacedToResult: 0,
-    numExecutions: 0,
-    queriesPerSecond: 0,
-    rowsPlacedToResults: 0,
-    serverMegabytesReadsPerSecond: 0,
-    serverRowReadsPerSecond: 0,
+    resultMiBs: 0,
+    executions: 0,
+    qps: 0,
+    resultRps: 0,
+    MiBs: 0,
+    rps: 0,
   };
   for await (const line of readLines(reader)) {
     output += `${line}\n`;
@@ -32,19 +31,17 @@ const parseBenchmarkResult = async (
       const stringResults = line.split(", ");
       stringResults.forEach((stringRow) => {
         if (stringRow.startsWith("queries")) {
-          results.numExecutions = +stringRow.split(" ")[1].replace(".", "");
+          results.executions = +stringRow.split(" ")[1].replace(".", "");
         } else if (stringRow.startsWith("QPS:")) {
-          results.queriesPerSecond = +stringRow.split(" ")[1];
+          results.qps = +stringRow.split(" ")[1];
         } else if (stringRow.startsWith("RPS:")) {
-          results.serverRowReadsPerSecond = +stringRow.split(" ")[1];
+          results.rps = +stringRow.split(" ")[1];
         } else if (stringRow.startsWith("MiB/s:")) {
-          results.serverMegabytesReadsPerSecond = +stringRow.split(" ")[1];
+          results.MiBs = +stringRow.split(" ")[1];
         } else if (stringRow.startsWith("result RPS:")) {
-          results.rowsPlacedToResults = +stringRow.split(" ")[2];
+          results.resultRps = +stringRow.split(" ")[2];
         } else if (stringRow.startsWith("result MiB/s:")) {
-          results.megabytesPlacedToResult = +stringRow
-            .split(" ")[2]
-            .replace(".", "");
+          results.resultMiBs = +stringRow.split(" ")[2].replace(".", "");
         }
       });
     }

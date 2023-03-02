@@ -12,31 +12,29 @@ export interface QueryExplainRaw {
   "Selected Granules": number;
 }
 
-export interface QueryExplain {
+export interface QueryExplainArray {
   type: string;
   keys: string[];
   parts: [number, number];
   granules: [number, number];
 }
 
-export const parserExplain = (explain: unknown): QueryExplain[] => {
-  const indexes: QueryExplainRaw[] = JSONPath({
-    path: "$..Indexes",
-    json: explain,
-    flatten: true,
-  });
-  return indexes.map((rawExplain) => ({
-    type: rawExplain.Type,
-    keys: rawExplain.Keys,
-    parts: [rawExplain["Initial Parts"], rawExplain["Selected Parts"]],
-    granules: [rawExplain["Initial Granules"], rawExplain["Selected Granules"]],
-  }));
-};
+interface QueryExplainResult {
+  type: "MinMax" | "Partition" | "PrimaryKey";
+  parts: [number, number];
+  keys: [string, string];
+  granules: [number, number];
+}
+
+export type QueryExplain = Record<
+  "MinMax" | "Partition" | "PrimaryKey",
+  QueryExplainResult
+>;
 
 export const getQueryExplain = async (
   query: string,
   config: Config["database"]
-): Promise<QueryExplain[]> => {
+): Promise<QueryExplain> => {
   const explain = await runQuery(
     config,
     `EXPLAIN indexes = 1, json = 1, description = 1 ${query} FORMAT TSVRaw`
@@ -46,10 +44,15 @@ export const getQueryExplain = async (
     json: explain,
     flatten: true,
   });
-  return indexes.map((rawExplain) => ({
+
+  const maps = indexes.map((rawExplain) => ({
     type: rawExplain.Type,
     keys: rawExplain.Keys,
     parts: [rawExplain["Initial Parts"], rawExplain["Selected Parts"]],
     granules: [rawExplain["Initial Granules"], rawExplain["Selected Granules"]],
   }));
+  return maps.reduce(
+    (acc, curr) => ({ ...acc, [curr.type]: curr }),
+    {} as QueryExplain
+  );
 };
