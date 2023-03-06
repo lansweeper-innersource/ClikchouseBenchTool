@@ -1,3 +1,4 @@
+import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
 import json2md from "https://esm.sh/json2md@2.0.0";
 
 import { QueryModule } from "./config.ts";
@@ -100,5 +101,5 @@ export const printResults = async (queryResults: QueryModule[]) => {
     });
   const encoder = new TextEncoder();
   const data = encoder.encode(json2md(md));
-  await Deno.writeFile("./results.md", data);
+  await Deno.writeFile(resolve("./results.md"), data);
 };

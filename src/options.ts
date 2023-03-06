@@ -1,4 +1,4 @@
-import { program } from "https://esm.sh/commander@10.0.0";
+import { commander } from "./deps.ts";
 
 export interface ProgramParams {
   module?: string;
@@ -6,14 +6,16 @@ export interface ProgramParams {
 }
 
 export const initProgram = () => {
-  program
+  commander.program
     .name("Clickhouse benchmarking tool")
     .description("CLI tool to test, analyse and compare clickhouse queries")
     .version("0.1.0");
 
-  program.option("-m, --module <char>").option("-i, --iterations <numbers>");
+  commander.program
+    .option("-m, --module <char>")
+    .option("-i, --iterations <numbers>");
 
-  program.parse();
+  commander.program.parse();
 };
 
-export const getOptions = (): ProgramParams => program.opts();
+export const getOptions = (): ProgramParams => commander.program.opts();

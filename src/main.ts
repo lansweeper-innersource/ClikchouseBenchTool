@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import { log } from "./deps.ts";
 
 import { getConfig, loadQueryModules } from "./config.ts";
 import { getOptions, initProgram } from "./options.ts";
@@ -14,9 +14,9 @@ const options = getOptions();
 
 // Check if clickhouse executable exists
 try {
-  await Deno.stat("./clickhouse");
+  await Deno.stat(`./clickhouse_${Deno.build.os}`);
 } catch (err) {
-  log.error("Clickhouse executable not found");
+  log.info(`Clickhouse executable ./clickhouse_${Deno.build.os} not found`);
   log.info(
     `Run: "curl https://clickhouse.com/ | sh" to download the official clickhouse binary`
   );
@@ -40,8 +40,7 @@ for (const module of queryModules) {
       try {
         moduleQuery.benchResult = await runDbBenchmark(
           moduleQuery.query,
-          config,
-          options
+          config
         );
         moduleQuery.indexResults = await getQueryExplain(
           moduleQuery.query,

@@ -1,7 +1,7 @@
-import { readLines } from "https://deno.land/std/io/read_lines.ts";
+import { readLines } from "https://deno.land/std@0.177.0/io/read_lines.ts";
+import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
 
 import { Config, getConfig } from "../config.ts";
-import { ProgramParams } from "../options.ts";
 
 export interface QueryBenchResult {
   executions: number;
@@ -49,33 +49,29 @@ const parseBenchmarkResult = async (
   return { results, output };
 };
 
-export const runDbBenchmark = async (
-  query: string,
-  config: Config,
-  options: ProgramParams
-) => {
+export const runDbBenchmark = async (query: string, config: Config) => {
   const benchCmd = [
-    "./clickhouse",
+    resolve(`./clickhouse_${Deno.build.os}`),
     "benchmark",
     `--host=${config.database.host}`,
-    // ...(config.database.port ? [`--port=${config.database.port}`] : []),
+    ...(config.database.tcpPort ? [`--port=${config.database.tcpPort}`] : []),
     `--user=${config.database.user}`,
     `--password=${config.database.password}`,
-    `--iterations=${options.iterations || 10}`,
+    `--iterations=${config.benchmark?.iterations || 1}`,
     `--database=assets`,
     `--query=${query}`,
   ];
   const p = Deno.run({ cmd: benchCmd, stdout: "piped", stderr: "piped" });
 
   const { code } = await p.status();
-  let benchOutput = "";
+
+  const parsedResult = await parseBenchmarkResult(p.stderr);
+  const benchResults = parsedResult.results;
+  let benchOutput = parsedResult.output;
 
   if (code !== 0) {
     throw `ERROR: ${benchOutput}`;
   }
 
-  const parsedResult = await parseBenchmarkResult(p.stderr);
-  const benchResults = parsedResult.results;
-  benchOutput = parsedResult.output;
   return benchResults;
 };

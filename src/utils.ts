@@ -1,3 +1,5 @@
+import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
+
 import { Config } from "./config.ts";
 
 export const formatBytes = (bytes: number, decimals = 2) => {
@@ -17,7 +19,7 @@ export const runQuery = async (
   query: string,
   params: string | undefined = undefined
 ) => {
-  const url = `http://${config.host}:${config.port}${
+  const url = `http://${config.host}:${config.httpPort}${
     params ? `?${params}` : ""
   }`;
   const resp = await fetch(encodeURI(url), {
@@ -49,8 +51,21 @@ export const downloadClickhouse = async () => {
 
   await Deno.writeFile("./download.sh", rawOutput);
   const installChCommand = Deno.run({
-    cmd: ["sh", "./download.sh"],
+    cmd: ["sh", resolve("./download.sh")],
   });
   await installChCommand.status();
-  await Deno.remove("./download.sh");
+  await Deno.remove(resolve("./download.sh"));
+
+  const rename = Deno.run({
+    cmd: [
+      "mv",
+      resolve("./clickhouse"),
+      resolve(`./clickhouse_${Deno.build.os}`),
+    ],
+  });
+
+  const { success } = await rename.status();
+  if (!success) {
+    throw new Error(`Error renaming ${resolve("./clickhouse")}`);
+  }
 };

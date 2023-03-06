@@ -137,3 +137,5 @@ queries
 
 # Executables
 clickhouse
+clickhouse_darwin
+clickhouse_linux
