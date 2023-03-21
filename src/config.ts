@@ -3,6 +3,7 @@ import { path, toml, cliffy } from "./deps.ts";
 import { QueryBenchResult } from "./benchmark/dbBenchmark.ts";
 import { QueryExplain } from "./benchmark/explainBenchmark.ts";
 import { QueryRunStatistics } from "./benchmark/runBenchmark.ts";
+import { getOptions } from "./options.ts";
 
 export interface Config {
   queryDirectory: string;
@@ -36,6 +37,19 @@ export interface QueryModule {
 
 let config: Config;
 export const getConfig = async (): Promise<Config> => {
+  const options = getOptions();
+  if (options.config) {
+    try {
+      const configFile = await Deno.readTextFile(
+        path.resolve(`./${options.config}.toml`)
+      );
+      config = toml.parse(configFile) as unknown as Config;
+    } catch (err) {
+      throw new Error(
+        `Error reading file ${path.resolve(`./${options.config}.toml`)}`
+      );
+    }
+  }
   if (!config) {
     try {
       const configFile = await Deno.readTextFile(path.resolve("./config.toml"));

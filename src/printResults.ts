@@ -26,14 +26,28 @@ export const printResults = async (queryResults: QueryModule[]) => {
     .filter((r) => r.executed)
     .forEach((result) => {
       md.push({ h2: result.name });
-      md.push({ h4: "Disk benchmark" });
+      md.push({ h4: "Query benchmark" });
+      const queryBenchmarkRows: any[] = result.queries
+        .filter((q) => q.executed)
+        .map((q) => [
+          q.name,
+          `${Math.round(q.runStatisticsResults?.elapsed! * 10000) / 10000}s`,
+          q.runStatisticsResults?.bytesReadStr,
+          q.runStatisticsResults?.rowsRead?.toString(),
+          q.runStatisticsResults?.rows?.toString(),
+          q.runStatisticsResults?.rowsBeforeLimitAtLeast?.toString(),
+        ]);
+      md.push({
+        table: {
+          headers: ["Query / Results", "Elapsed", "Bytes read", "Rows read"],
+          rows: queryBenchmarkRows,
+        },
+      });
+
       const diskBenchmarkRows: any[] = result.queries
         .filter((q) => q.executed)
         .map((q) => [
           q.name,
-          `${Math.round(q.runStatisticsResults?.elapsed! * 100) / 100}s`,
-          q.runStatisticsResults?.bytesReadStr,
-          q.runStatisticsResults?.rowsRead.toString(),
           q.benchResult?.qps.toString(),
           q.benchResult?.resultRps.toString(),
           q.benchResult?.resultMiBs.toString(),
@@ -43,9 +57,6 @@ export const printResults = async (queryResults: QueryModule[]) => {
         table: {
           headers: [
             "Query / Results",
-            "Elapsed",
-            "Bytes read",
-            "Rows read",
             "QPS",
             "Result RPS",
             "Result MiB/s",

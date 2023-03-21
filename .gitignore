@@ -130,7 +130,7 @@ dist
 .pnp.*
 
 # Config files
-config.toml
+*.toml
 results.md
 queries
 .vscode
@@ -138,4 +138,6 @@ queries
 # Executables
 clickhouse
 clickhouse_darwin
+chbench_linux
 clickhouse_linux
+chbench_mac

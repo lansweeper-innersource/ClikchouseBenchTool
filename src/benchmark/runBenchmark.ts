@@ -6,6 +6,8 @@ export interface QueryRunStatistics {
   rowsRead: number;
   bytesRead: number;
   bytesReadStr: string;
+  rows: number;
+  rowsBeforeLimitAtLeast: number;
 }
 
 export const runQueryBenchmark = async (
@@ -19,10 +21,13 @@ export const runQueryBenchmark = async (
   );
 
   const parsedResultStatistics = resultString.statistics;
+
   return {
     elapsed: parsedResultStatistics.elapsed as number,
     bytesRead: parsedResultStatistics.bytes_read as number,
     bytesReadStr: formatBytes(parsedResultStatistics.bytes_read),
     rowsRead: parsedResultStatistics.rows_read,
+    rows: resultString.rows,
+    rowsBeforeLimitAtLeast: resultString.rows_before_limit_at_least || 0,
   };
 };
