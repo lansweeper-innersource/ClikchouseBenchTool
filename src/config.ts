@@ -22,9 +22,10 @@ export interface Config {
 }
 
 export interface QueryModuleQuery {
-  executed?: boolean;
+  isCurrentQuery: boolean;
   name: string;
   query: string;
+  executed?: boolean;
   benchResult?: QueryBenchResult;
   runStatisticsResults?: QueryRunStatistics;
   indexResults?: QueryExplain;
@@ -141,7 +142,13 @@ export const loadQueryModules = async () => {
             )
           );
 
+          const queryString = replaceQueryParameters(
+            new TextDecoder().decode(sqlContent),
+            config.params
+          );
+
           module.queries.push({
+            isCurrentQuery: queryString.includes("-- CURRENT_QUERY"),
             name: moduleQuery.name,
             query: replaceQueryParameters(
               new TextDecoder().decode(sqlContent),

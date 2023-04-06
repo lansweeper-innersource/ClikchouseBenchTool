@@ -1,4 +1,5 @@
 import { log } from "./deps.ts";
+import Kia from "https://deno.land/x/kia@0.4.1/mod.ts";
 
 import { getConfig, loadQueryModules } from "./config.ts";
 import { getOptions, initProgram } from "./options.ts";
@@ -36,22 +37,32 @@ for (const module of queryModules) {
   if (!options.module || options.module === module.name) {
     log.info(`Running module ${module.name}`);
     module.executed = true;
+
     for (const moduleQuery of module.queries) {
+      const spinner = new Kia("query benchmark");
       try {
-        moduleQuery.benchResult = await runDbBenchmark(
-          moduleQuery.query,
-          config
-        );
-        moduleQuery.indexResults = await getQueryExplain(
-          moduleQuery.query,
-          config.database
+        spinner.start();
+        spinner.set(
+          `Running execution benchmark for query ${moduleQuery.name}`
         );
         moduleQuery.runStatisticsResults = await runQueryBenchmark(
           moduleQuery.query,
           config.database
         );
         moduleQuery.executed = true;
-        log.info(`${moduleQuery.name} ✔️`);
+        spinner.set(`Running benchmark for query ${moduleQuery.name}`);
+        moduleQuery.benchResult = await runDbBenchmark(
+          moduleQuery.query,
+          config
+        );
+        spinner.set(`Running index explain for query ${moduleQuery.name}`);
+        moduleQuery.indexResults = await getQueryExplain(
+          moduleQuery.query,
+          config.database
+        );
+        spinner.succeed(
+          `Benchmark for query ${moduleQuery.name} completed successfully`
+        );
       } catch (err) {
         log.error(
           `Error running benchmark for query ${moduleQuery.query}: ${err}`

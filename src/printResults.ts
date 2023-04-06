@@ -2,6 +2,11 @@ import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
 import json2md from "https://esm.sh/json2md@2.0.0";
 
 import { QueryModule } from "./config.ts";
+import {
+  bytesToHuman,
+  microsecondsToHuman,
+  milisecondsToHuman,
+} from "./utils.ts";
 
 const arraySplit = (arr?: [number, number]) =>
   arr ? `${arr[0]} / ${arr[1]} ${Math.round((arr[1] * 100) / arr[0])}%` : "N/a";
@@ -31,15 +36,28 @@ export const printResults = async (queryResults: QueryModule[]) => {
         .filter((q) => q.executed)
         .map((q) => [
           q.name,
-          `${Math.round(q.runStatisticsResults?.elapsed! * 10000) / 10000}s`,
-          q.runStatisticsResults?.bytesReadStr,
+          milisecondsToHuman(q.runStatisticsResults?.elapsed || 0).toString(),
+          bytesToHuman(q.runStatisticsResults?.bytesRead || 0),
           q.runStatisticsResults?.rowsRead?.toString(),
           q.runStatisticsResults?.rows?.toString(),
           q.runStatisticsResults?.rowsBeforeLimitAtLeast?.toString(),
+          bytesToHuman(q.runStatisticsResults?.bytesResultsInRam || 0),
+          bytesToHuman(q.runStatisticsResults?.memoryUsage || 0),
+          microsecondsToHuman(q.runStatisticsResults?.CPUTime!),
         ]);
       md.push({
         table: {
-          headers: ["Query / Results", "Elapsed", "Bytes read", "Rows read"],
+          headers: [
+            "Query / Results",
+            "Elapsed",
+            "Bytes read",
+            "Rows read",
+            "Rows",
+            "Rows before Limit",
+            "Results In Ram",
+            "Ram used",
+            "CPU Time",
+          ],
           rows: queryBenchmarkRows,
         },
       });

@@ -2,18 +2,6 @@ import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
 
 import { Config } from "./config.ts";
 
-export const formatBytes = (bytes: number, decimals = 2) => {
-  if (!+bytes) return "0 Bytes";
-
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-};
-
 export const runQuery = async (
   config: Config["database"],
   query: string,
@@ -68,4 +56,34 @@ export const downloadClickhouse = async () => {
   if (!success) {
     throw new Error(`Error renaming ${resolve("./clickhouse")}`);
   }
+};
+
+export const microsecondsToHuman = (microseconds: number) => {
+  if (microseconds < 1000) {
+    return `${microseconds}μs`;
+  }
+  if (microseconds < 1000000) {
+    return `${(microseconds / 1000).toFixed(2)}ms`;
+  }
+  return `${(microseconds / 1000000).toFixed(2)}s`;
+};
+
+export const milisecondsToHuman = (miliseconds: number) => {
+  if (miliseconds < 1000) {
+    return `${miliseconds}ms`;
+  }
+  return `${(miliseconds / 1000).toFixed(2)}s`;
+};
+
+export const bytesToHuman = (bytes: number) => {
+  if (bytes < 1024) {
+    return `${bytes}B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(2)}KB`;
+  }
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / 1024 / 1024).toFixed(2)}MB`;
+  }
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)}GB`;
 };
