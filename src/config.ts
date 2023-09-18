@@ -1,4 +1,4 @@
-import { path, toml, cliffy } from "./deps.ts";
+import { cliffy, path, toml } from "./deps.ts";
 
 import { QueryBenchResult } from "./benchmark/dbBenchmark.ts";
 import { QueryExplain } from "./benchmark/explainBenchmark.ts";
@@ -8,6 +8,7 @@ import { getOptions } from "./options.ts";
 export interface Config {
   queryDirectory: string;
   database: {
+    secure: boolean;
     host: string;
     user: string;
     password: string;
@@ -25,11 +26,13 @@ export interface QueryModuleQuery {
   isCurrentQuery: boolean;
   name: string;
   query: string;
+  params?: Record<string, string>;
   executed?: boolean;
   benchResult?: QueryBenchResult;
   runStatisticsResults?: QueryRunStatistics;
   indexResults?: QueryExplain;
 }
+
 export interface QueryModule {
   executed?: boolean;
   name: string;
@@ -42,12 +45,12 @@ export const getConfig = async (): Promise<Config> => {
   if (options.config) {
     try {
       const configFile = await Deno.readTextFile(
-        path.resolve(`./${options.config}.toml`)
+        path.resolve(`./${options.config}.toml`),
       );
       config = toml.parse(configFile) as unknown as Config;
     } catch (err) {
       throw new Error(
-        `Error reading file ${path.resolve(`./${options.config}.toml`)}`
+        `Error reading file ${path.resolve(`./${options.config}.toml`)}`,
       );
     }
   }
@@ -61,13 +64,17 @@ export const getConfig = async (): Promise<Config> => {
         message: "Enter clickhouse http port",
         default: 8123,
       });
+      const secure = await cliffy.Input.prompt({
+        message: "HTTP secure connection (y/n)",
+        default: "n",
+      });
       const tcpPort = await cliffy.Number.prompt({
         message: "Enter clickhouse tcp port",
         default: 9000,
       });
       const user = await cliffy.Input.prompt(`Enter clickhouse user`);
       const password = await cliffy.Secret.prompt(
-        `Enter clickhouse password for user ${user}`
+        `Enter clickhouse password for user ${user}`,
       );
       const database = await cliffy.Input.prompt("Enter clickhouse databse");
       console.log({ host, httpPort, tcpPort, user, database });
@@ -79,9 +86,10 @@ export const getConfig = async (): Promise<Config> => {
           database,
           host,
           password,
+          user,
+          secure: secure === "y",
           httpPort: httpPort || 9000,
           tcpPort: tcpPort || 8123,
-          user,
         },
         params: { siteId: "123" },
         queryDirectory: "queries",
@@ -90,7 +98,7 @@ export const getConfig = async (): Promise<Config> => {
         },
       };
       const tomlConfig = toml.stringify(
-        promptConfig as unknown as Record<string, unknown>
+        promptConfig as unknown as Record<string, unknown>,
       );
       const encoder = new TextEncoder();
       const data = encoder.encode(tomlConfig);
@@ -101,7 +109,7 @@ export const getConfig = async (): Promise<Config> => {
 
       await Deno.writeFile(
         path.resolve("./queries/001_demo_query/demo_query.sql"),
-        encoder.encode("SELECT 1 = 1")
+        encoder.encode("SELECT 1 = 1"),
       );
 
       const configFile = await Deno.readTextFile(path.resolve("./config.toml"));
@@ -114,21 +122,12 @@ export const getConfig = async (): Promise<Config> => {
 export const loadQueryModules = async () => {
   const config = await getConfig();
 
-  const replaceQueryParameters = (
-    query: string,
-    params: Record<string, string>
-  ) => {
-    return Object.entries(params).reduce((acc, [key, value]) => {
-      return acc.replaceAll(`{ ${key} :String }`, `'${value}'`);
-    }, query);
-  };
-
   const queryModules: QueryModule[] = [];
   const queryFilesIterable = Deno.readDir(path.resolve(config.queryDirectory));
   for await (const file of queryFilesIterable) {
     if (file.isDirectory) {
       const queryModuleIterable = Deno.readDir(
-        path.resolve(`./${config.queryDirectory}/${file.name}`)
+        path.resolve(`./${config.queryDirectory}/${file.name}`),
       );
       const module: QueryModule = {
         name: file.name,
@@ -136,24 +135,31 @@ export const loadQueryModules = async () => {
       };
       for await (const moduleQuery of queryModuleIterable) {
         if (moduleQuery.isFile && moduleQuery.name.split(".").pop() === "sql") {
-          const sqlContent = await Deno.readFile(
+          const query = await Deno.readTextFile(
             path.resolve(
-              `./${config.queryDirectory}/${file.name}/${moduleQuery.name}`
-            )
+              `./${config.queryDirectory}/${file.name}/${moduleQuery.name}`,
+            ),
           );
-
-          const queryString = replaceQueryParameters(
-            new TextDecoder().decode(sqlContent),
-            config.params
-          );
+          let params = {};
+          try {
+            params = JSON.parse(
+              await Deno.readTextFile(
+                path.resolve(
+                  `./${config.queryDirectory}/${file.name}/${
+                    moduleQuery.name.replace(".sql", "_params.json")
+                  }`,
+                ),
+              ),
+            );
+          } catch {
+            // No params file
+          }
 
           module.queries.push({
-            isCurrentQuery: queryString.includes("-- CURRENT_QUERY"),
+            query,
+            params,
+            isCurrentQuery: query.includes("-- CURRENT_QUERY"),
             name: moduleQuery.name,
-            query: replaceQueryParameters(
-              new TextDecoder().decode(sqlContent),
-              config.params
-            ),
           });
         }
       }

@@ -33,11 +33,14 @@ export type QueryExplain = Record<
 
 export const getQueryExplain = async (
   query: string,
-  config: Config["database"]
+  config: Config["database"],
 ): Promise<QueryExplain> => {
   const explain = await runQuery(
-    config,
-    `EXPLAIN indexes = 1, json = 1, description = 1 ${query} FORMAT TSVRaw`
+    {
+      config,
+      query:
+        `EXPLAIN indexes = 1, json = 1, description = 1 ${query} FORMAT TSVRaw`,
+    },
   );
   const indexes: QueryExplainRaw[] = JSONPath({
     path: "$..Indexes",
@@ -53,6 +56,6 @@ export const getQueryExplain = async (
   }));
   return maps.reduce(
     (acc, curr) => ({ ...acc, [curr.type]: curr }),
-    {} as QueryExplain
+    {} as QueryExplain,
   );
 };

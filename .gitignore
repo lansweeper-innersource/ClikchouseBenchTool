@@ -134,6 +134,7 @@ dist
 results.md
 queries
 .vscode
+.idea
 
 # Executables
 clickhouse

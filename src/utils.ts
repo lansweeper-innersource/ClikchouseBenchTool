@@ -1,15 +1,29 @@
 import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
+import { Config, QueryModuleQuery } from "./config.ts";
 
-import { Config } from "./config.ts";
+export const paramsToQueryString = (params: QueryModuleQuery["params"]) => {
+  if (params) {
+    return Object.entries(params).map(
+      ([paramKey, paramValue]: [string, string]) => {
+        return `param_${paramKey}=${paramValue}`;
+      },
+    ).join("&");
+  }
+};
 
 export const runQuery = async (
-  config: Config["database"],
-  query: string,
-  params: string | undefined = undefined
+  { queryParams = {}, query, config, extraQueryParams = "" }: {
+    config: Config["database"];
+    query: string;
+    queryParams?: QueryModuleQuery["params"];
+    extraQueryParams?: string;
+  },
 ) => {
-  const url = `http://${config.host}:${config.httpPort}${
-    params ? `?${params}` : ""
-  }`;
+  const url = `http${
+    config.secure ? "s" : ""
+  }://${config.host}:${config.httpPort}?${
+    paramsToQueryString(queryParams)
+  }&${extraQueryParams}`;
   const resp = await fetch(encodeURI(url), {
     method: "POST",
     headers: {

@@ -2,11 +2,7 @@ import { resolve } from "https://deno.land/std@0.178.0/path/mod.ts";
 import json2md from "https://esm.sh/json2md@2.0.0";
 
 import { QueryModule } from "./config.ts";
-import {
-  bytesToHuman,
-  microsecondsToHuman,
-  milisecondsToHuman,
-} from "./utils.ts";
+import { bytesToHuman, microsecondsToHuman } from "./utils.ts";
 
 const arraySplit = (arr?: [number, number]) =>
   arr ? `${arr[0]} / ${arr[1]} ${Math.round((arr[1] * 100) / arr[0])}%` : "N/a";
@@ -14,10 +10,10 @@ const arraySplit = (arr?: [number, number]) =>
 export const printResults = async (queryResults: QueryModule[]) => {
   const md: json2md.DataObject[] = [];
 
+  md.push({ h2: "Metrics legend" });
   md.push({
     ul: [
       "Query: Query name",
-      "Elapsed: Time it took for the query to be executed.",
       "Bytes read: Amount of bytes that ClickHouse has loaded to execute the query",
       "Rows read: Number of rows read to execute the query.",
       "QPS: Queries executed per second",
@@ -36,7 +32,6 @@ export const printResults = async (queryResults: QueryModule[]) => {
         .filter((q) => q.executed)
         .map((q) => [
           q.name,
-          milisecondsToHuman(q.runStatisticsResults?.elapsed || 0).toString(),
           bytesToHuman(q.runStatisticsResults?.bytesRead || 0),
           q.runStatisticsResults?.rowsRead?.toString(),
           q.runStatisticsResults?.rows?.toString(),
@@ -49,7 +44,6 @@ export const printResults = async (queryResults: QueryModule[]) => {
         table: {
           headers: [
             "Query / Results",
-            "Elapsed",
             "Bytes read",
             "Rows read",
             "Rows",
@@ -91,24 +85,24 @@ export const printResults = async (queryResults: QueryModule[]) => {
           q.name,
           ...(q.indexResults?.MinMax
             ? [
-                arraySplit(q.indexResults.MinMax.granules),
-                arraySplit(q.indexResults.MinMax.parts),
-              ]
+              arraySplit(q.indexResults.MinMax.granules),
+              arraySplit(q.indexResults.MinMax.parts),
+            ]
             : []),
           ...(q.indexResults?.Partition
             ? [
-                (q.indexResults?.Partition.keys || []).join(", "),
-                arraySplit(q.indexResults?.Partition.parts),
-                arraySplit(q.indexResults?.Partition.granules),
-              ]
+              (q.indexResults?.Partition.keys || []).join(", "),
+              arraySplit(q.indexResults?.Partition.parts),
+              arraySplit(q.indexResults?.Partition.granules),
+            ]
             : []),
           ,
           ...(q.indexResults?.PrimaryKey
             ? [
-                (q.indexResults?.PrimaryKey.keys || []).join(", "),
-                arraySplit(q.indexResults?.PrimaryKey.parts),
-                arraySplit(q.indexResults?.PrimaryKey.granules),
-              ]
+              (q.indexResults?.PrimaryKey.keys || []).join(", "),
+              arraySplit(q.indexResults?.PrimaryKey.parts),
+              arraySplit(q.indexResults?.PrimaryKey.granules),
+            ]
             : []),
         ]);
       md.push({
