@@ -167,5 +167,8 @@ export const loadQueryModules = async () => {
     }
   }
 
-  return queryModules;
+  return queryModules.map((queryModule) => {
+    queryModule.queries.sort((a, b) => a.name.localeCompare(b.name));
+    return queryModule;
+  });
 };
