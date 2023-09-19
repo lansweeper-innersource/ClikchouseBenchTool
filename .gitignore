@@ -139,6 +139,6 @@ queries
 # Executables
 clickhouse
 clickhouse_darwin
-chbench_linux
+chbench_linux*
 clickhouse_linux
-chbench_mac
+chbench_mac*

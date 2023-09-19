@@ -5,6 +5,11 @@ export const paramsToQueryString = (params: QueryModuleQuery["params"]) => {
   if (params) {
     return Object.entries(params).map(
       ([paramKey, paramValue]: [string, string]) => {
+        if (Array.isArray(paramValue)) {
+          return `param_${paramKey}=[${
+            paramValue.map((v) => `'${v}'`).join(",")
+          }]`;
+        }
         return `param_${paramKey}=${paramValue}`;
       },
     ).join("&");
