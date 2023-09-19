@@ -19,7 +19,7 @@ try {
 } catch (err) {
   log.info(`Clickhouse executable ./clickhouse_${Deno.build.os} not found`);
   log.info(
-    `Run: "curl https://clickhouse.com/ | sh" to download the official clickhouse binary`
+    `Run: "curl https://clickhouse.com/ | sh" to download the official clickhouse binary`,
   );
   try {
     await downloadClickhouse();
@@ -40,32 +40,38 @@ for (const module of queryModules) {
 
     for (const moduleQuery of module.queries) {
       const spinner = new Kia("query benchmark");
+      const params = { ...config.params, ...moduleQuery.params };
       try {
         spinner.start();
         spinner.set(
-          `Running execution benchmark for query ${moduleQuery.name}`
+          `Running execution benchmark for query ${moduleQuery.name}`,
         );
-        moduleQuery.runStatisticsResults = await runQueryBenchmark(
+        const { parsedQuery, runStatisticsResults } = await runQueryBenchmark(
           moduleQuery.query,
-          config.database
+          params,
+          config,
         );
+        moduleQuery.runStatisticsResults = runStatisticsResults;
         moduleQuery.executed = true;
         spinner.set(`Running benchmark for query ${moduleQuery.name}`);
         moduleQuery.benchResult = await runDbBenchmark(
-          moduleQuery.query,
-          config
+          parsedQuery,
+          config,
         );
         spinner.set(`Running index explain for query ${moduleQuery.name}`);
         moduleQuery.indexResults = await getQueryExplain(
-          moduleQuery.query,
-          config.database
+          parsedQuery,
+          config.database,
         );
         spinner.succeed(
-          `Benchmark for query ${moduleQuery.name} completed successfully`
+          `Benchmark for query ${moduleQuery.name} completed successfully`,
         );
       } catch (err) {
+        spinner.fail(`Error running benchmark for query ${moduleQuery.name}`);
         log.error(
-          `Error running benchmark for query ${moduleQuery.query}: ${err}`
+          `Error running benchmark for query ${moduleQuery.query}: ${err}
+\nTroubleshooting:
+  - Check if you are giving values for all the query params`,
         );
         Deno.exit(-1);
       }

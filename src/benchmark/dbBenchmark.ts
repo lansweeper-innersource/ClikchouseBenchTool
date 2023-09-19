@@ -13,7 +13,7 @@ export interface QueryBenchResult {
 }
 
 const parseBenchmarkResult = async (
-  reader: Deno.Reader
+  reader: Deno.Reader,
 ): Promise<{ results: QueryBenchResult; output: string }> => {
   const config = await getConfig();
   let output = "";
@@ -49,7 +49,10 @@ const parseBenchmarkResult = async (
   return { results, output };
 };
 
-export const runDbBenchmark = async (query: string, config: Config) => {
+export const runDbBenchmark = async (
+  query: string,
+  config: Config,
+) => {
   const benchCmd = [
     resolve(`./clickhouse_${Deno.build.os}`),
     "benchmark",
@@ -60,6 +63,7 @@ export const runDbBenchmark = async (query: string, config: Config) => {
     `--iterations=${config.benchmark?.iterations || 1}`,
     `--database=assets`,
     `--query=${query}`,
+    ...(config.database.secure ? ["--secure"] : []),
   ];
   const p = Deno.run({ cmd: benchCmd, stdout: "piped", stderr: "piped" });
 
