@@ -131,7 +131,7 @@ dist
 
 # Config files
 *.toml
-results.md
+*results.md
 queries
 .vscode
 .idea

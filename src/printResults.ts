@@ -8,24 +8,23 @@ const arraySplit = (arr?: [number, number]) =>
   arr ? `${arr[0]} / ${arr[1]} ${Math.round((arr[1] * 100) / arr[0])}%` : "N/a";
 
 export const printResults = async (queryResults: QueryModule[]) => {
-  const md: json2md.DataObject[] = [];
-
-  md.push({ h2: "Metrics legend" });
-  md.push({
-    ul: [
-      "Query: Query name",
-      "Bytes read: Amount of bytes that ClickHouse has loaded to execute the query",
-      "Rows read: Number of rows read to execute the query.",
-      "QPS: Queries executed per second",
-      "Result RPS:  How many megabytes the server reads per second",
-      "Result MiB/s: How many rows placed by the server to the result of a query per second",
-      "RPS: How many rows the server reads per second",
-    ],
-  });
-
   queryResults
     .filter((r) => r.executed)
-    .forEach((result) => {
+    .forEach(async (result) => {
+      const md: json2md.DataObject[] = [];
+
+      md.push({ h2: "Metrics legend" });
+      md.push({
+        ul: [
+          "Query: Query name",
+          "Bytes read: Amount of bytes that ClickHouse has loaded to execute the query",
+          "Rows read: Number of rows read to execute the query.",
+          "QPS: Queries executed per second",
+          "Result RPS:  How many megabytes the server reads per second",
+          "Result MiB/s: How many rows placed by the server to the result of a query per second",
+          "RPS: How many rows the server reads per second",
+        ],
+      });
       md.push({ h2: result.name });
       md.push({ h4: "Query benchmark" });
       const queryBenchmarkRows: any[] = result.queries
@@ -121,8 +120,8 @@ export const printResults = async (queryResults: QueryModule[]) => {
           rows: indexBenchmark,
         },
       });
+      const encoder = new TextEncoder();
+      const data = encoder.encode(json2md(md));
+      await Deno.writeFile(resolve(`./${result.name}_results.md`), data);
     });
-  const encoder = new TextEncoder();
-  const data = encoder.encode(json2md(md));
-  await Deno.writeFile(resolve("./results.md"), data);
 };
