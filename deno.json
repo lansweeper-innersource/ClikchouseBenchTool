@@ -1,7 +1,0 @@
-{
-  "tasks": {
-    "start": "deno run --allow-run --allow-read --allow-net --allow-write --allow-env ./src/main.ts",
-    "compile:mac": "deno compile --target aarch64-apple-darwin --output ./chbench --allow-run --allow-read --allow-net --allow-write ./src/main.ts",
-    "compile:linux": "deno compile --target x86_64-unknown-linux-gnu --output ./chbench --allow-run --allow-read --allow-net --allow-write ./src/main.ts"
-  }
-}
