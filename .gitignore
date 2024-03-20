@@ -147,4 +147,4 @@ chbench_mac*
 .DS_Store
 
 # exe
-./chbt*
+chbt*
