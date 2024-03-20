@@ -12,6 +12,8 @@ import (
 	"github.com/lansweeper/ClickhouseBenchTool/internal/db"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type tomlParams struct {
@@ -67,9 +69,9 @@ var benchmarkCmd = &cobra.Command{
 			numQueries += len(module.Queries)
 		}
 		resultsChan := make(chan internal.BenchmarkResults, numQueries)
-		// var bar = progressbar.Default(int64(numQueries))z
+		var bar = progressbar.Default(int64(numQueries))
 
-		pool := pond.New(3, 10)
+		pool := pond.New(viper.GetInt("maxWorkers"), viper.GetInt("maxWorkerCapacity"))
 		defer pool.StopAndWait()
 
 		group, poolCtx := pool.GroupContext(cmd.Context())
@@ -91,7 +93,10 @@ var benchmarkCmd = &cobra.Command{
 					if err != nil {
 						return err
 					}
+					benchmarkResults.ModuleName = module.Name
+					benchmarkResults.QueryName = q.Name
 					resultsChan <- benchmarkResults
+					bar.Add(1)
 					return nil
 				})
 			}
@@ -133,6 +138,8 @@ func init() {
 	rootCmd.PersistentFlags().StringP("user", "u", "", "ClickHouse user")
 	rootCmd.PersistentFlags().StringP("password", "w", "", "ClickHouse password")
 	rootCmd.PersistentFlags().StringP("directory", "d", "queries", "Directory containing the modules to be executed")
+	rootCmd.PersistentFlags().IntP("maxWorkers", "", 1, "Number of workers to run the queries")
+	rootCmd.PersistentFlags().IntP("maxWorkerCapacity", "", 1, "Max capacity for each worker")
 
 	viper.BindPFlag("database.port", rootCmd.PersistentFlags().Lookup("port"))
 	viper.BindPFlag("database.host", rootCmd.PersistentFlags().Lookup("host"))
@@ -140,4 +147,6 @@ func init() {
 	viper.BindPFlag("database.user", rootCmd.PersistentFlags().Lookup("user"))
 	viper.BindPFlag("database.password", rootCmd.PersistentFlags().Lookup("password"))
 	viper.BindPFlag("directory", rootCmd.PersistentFlags().Lookup("directory"))
+	viper.BindPFlag("maxWorkers", rootCmd.PersistentFlags().Lookup("maxWorkers"))
+	viper.BindPFlag("maxWorkerCapacity", rootCmd.PersistentFlags().Lookup("maxWorkerCapacity"))
 }

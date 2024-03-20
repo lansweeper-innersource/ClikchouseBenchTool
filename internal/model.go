@@ -50,6 +50,8 @@ type QueryLogBenchmarkResults struct {
 }
 
 type BenchmarkResults struct {
+	ModuleName string
+	QueryName  string
 	*CliBenchmarkResults
 	*QueryExplainBenchmarkResult
 	*QueryLogBenchmarkResults
