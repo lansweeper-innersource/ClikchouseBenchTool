@@ -142,3 +142,6 @@ clickhouse_darwin
 chbench_linux*
 clickhouse_linux
 chbench_mac*
+
+# Mac
+.DS_Store
