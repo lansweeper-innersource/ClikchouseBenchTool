@@ -7,5 +7,5 @@ metadata:
     github.com/project-slug: Lansweeper/ClikchouseBenchTool
 spec:
   type: github-repository
-  owner: @juancarlosllhL
+  owner: user:juancarlosllhL
   lifecycle: stable
