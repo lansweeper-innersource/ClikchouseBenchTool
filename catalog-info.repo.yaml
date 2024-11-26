@@ -1,11 +1,10 @@
-apiVersion: backstage.io/v1alpha1
-kind: Component
+apiVersion: lansweeper.com/v1alpha1
+kind: Repository
 metadata:
-  name: ClikchouseBenchTool
-  description: Benchmarking tool for clickhouse queries
   annotations:
     github.com/project-slug: Lansweeper/ClikchouseBenchTool
+  description: Benchmarking tool for clickhouse queries
+  name: ClikchouseBenchTool
 spec:
-  type: github-repository
-  owner: user:juancarlosllhL
   lifecycle: stable
+  owner: user:juancarlosllhL
