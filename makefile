@@ -14,3 +14,6 @@ build-windows:
 	env GOOS=windows GOARCH=amd64 go build -o chbt-windows.exe
 
 build-all: build-mac build-mac-intel build-linux build-windows
+
+install-clickhouse-cli:
+	curl https://clickhouse.com/ | sh

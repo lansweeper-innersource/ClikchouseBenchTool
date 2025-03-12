@@ -1,46 +1,80 @@
 package benchmark
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
 
-	"github.com/lansweeper/ClickhouseBenchTool/internal"
-	"github.com/lansweeper/ClickhouseBenchTool/internal/db"
+	"github.com/ClickHouse/clickhouse-go/v2"
 )
 
-type CliBenchmarkConfig struct {
-	Iterations int
-	Query      string
+type cliBenchmarkResults struct {
+	ResultMiBs float64
+	Executions int
+	QPS        float64
+	ResultRps  float64
+	MiBs       float64
+	RPS        float64
 }
 
-func RunCliBenchmark(pathToCli string, chConfig db.ClickHouseConfig, benchConfig CliBenchmarkConfig) (internal.CliBenchmarkResults, error) {
-	cliResults := internal.CliBenchmarkResults{}
+const CliBenchmarkName = "cliBenchmark"
+
+type CliBenchmarkConfig struct {
+	PathToCli  string
+	Host       string
+	Port       int
+	Username   string
+	Password   string
+	Iterations int
+	Database   string
+	Secure     bool
+}
+
+type CliBenchmark struct {
+	conn   clickhouse.Conn
+	config CliBenchmarkConfig
+}
+
+func NewCliBenchmark(conn clickhouse.Conn, config CliBenchmarkConfig) *CliBenchmark {
+	return &CliBenchmark{
+		conn:   conn,
+		config: config,
+	}
+}
+
+func (qlb *CliBenchmark) Name() string {
+	return CliBenchmarkName
+}
+
+func (qlb *CliBenchmark) Run(ctx context.Context, queryParams map[string]any, query string) (map[string]string, error) {
+	cliResults := cliBenchmarkResults{}
+	benchConfig := qlb.config
 	args := []string{
 		"benchmark",
-		fmt.Sprintf("--host=%s", chConfig.Host),
-		fmt.Sprintf("--port=%d", chConfig.Port),
-		fmt.Sprintf("--user=%s", chConfig.Username),
-		fmt.Sprintf("--password=%s", chConfig.Password),
+		fmt.Sprintf("--host=%s", benchConfig.Host),
+		fmt.Sprintf("--port=%d", benchConfig.Port),
+		fmt.Sprintf("--user=%s", benchConfig.Username),
+		fmt.Sprintf("--password=%s", benchConfig.Password),
 		fmt.Sprintf("--iterations=%d", benchConfig.Iterations),
-		fmt.Sprintf("--database=%s", chConfig.Database),
-		fmt.Sprintf("--query=%s", benchConfig.Query),
+		fmt.Sprintf("--database=%s", benchConfig.Database),
+		fmt.Sprintf("--query=%s", query),
 	}
 
-	if chConfig.Secure {
+	if benchConfig.Secure {
 		args = append(args, "--secure")
 	}
 
-	runBenchmarkCommand := exec.Command(pathToCli, args...)
+	runBenchmarkCommand := exec.Command(benchConfig.PathToCli, args...)
 	output, err := runBenchmarkCommand.CombinedOutput()
 	if err != nil {
 		fmt.Println(string(output))
-		return cliResults, fmt.Errorf("execute benchmark cli command: %w", err)
+		return map[string]string{}, fmt.Errorf("execute benchmark cli command: %w", err)
 	}
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, chConfig.Host) {
+		if strings.HasPrefix(line, benchConfig.Host) {
 			lineWithoutFinalDot := strings.TrimSuffix(line, ".")
 			lineResults := strings.Split(lineWithoutFinalDot, ", ")
 			for _, result := range lineResults {
@@ -49,37 +83,37 @@ func RunCliBenchmark(pathToCli string, chConfig db.ClickHouseConfig, benchConfig
 				case "queries":
 					numericValue, err := strconv.Atoi(resultElement[1])
 					if err != nil {
-						return cliResults, fmt.Errorf("parse queries: %w", err)
+						return map[string]string{}, fmt.Errorf("parse queries: %w", err)
 					}
 					cliResults.Executions = numericValue
 				case "QPS":
 					numericValue, err := strconv.ParseFloat(resultElement[1], 64)
 					if err != nil {
-						return cliResults, fmt.Errorf("parse QPS: %w", err)
+						return map[string]string{}, fmt.Errorf("parse QPS: %w", err)
 					}
 					cliResults.QPS = numericValue
 				case "MiB/s":
 					numericValue, err := strconv.ParseFloat(resultElement[1], 64)
 					if err != nil {
-						return cliResults, fmt.Errorf("parse MiB/s: %w", err)
+						return map[string]string{}, fmt.Errorf("parse MiB/s: %w", err)
 					}
 					cliResults.MiBs = numericValue
 				case "RPS":
 					numericValue, err := strconv.ParseFloat(resultElement[1], 64)
 					if err != nil {
-						return cliResults, fmt.Errorf("parse RPS: %w", err)
+						return map[string]string{}, fmt.Errorf("parse RPS: %w", err)
 					}
 					cliResults.RPS = numericValue
 				case "result MiB/s":
 					numericValue, err := strconv.ParseFloat(resultElement[1], 64)
 					if err != nil {
-						return cliResults, fmt.Errorf("parse result MiB/s: %w", err)
+						return map[string]string{}, fmt.Errorf("parse result MiB/s: %w", err)
 					}
 					cliResults.ResultMiBs = numericValue
 				case "result RPS":
 					numericValue, err := strconv.ParseFloat(resultElement[1], 64)
 					if err != nil {
-						return cliResults, fmt.Errorf("parse result RPS: %w", err)
+						return map[string]string{}, fmt.Errorf("parse result RPS: %w", err)
 					}
 					cliResults.ResultRps = numericValue
 				}
@@ -87,5 +121,12 @@ func RunCliBenchmark(pathToCli string, chConfig db.ClickHouseConfig, benchConfig
 			}
 		}
 	}
-	return cliResults, nil
+	return map[string]string{
+		"resultMiBs": fmt.Sprintf("%f", cliResults.ResultMiBs),
+		"executions": fmt.Sprintf("%v", cliResults.Executions),
+		"QPS":        fmt.Sprintf("%f", cliResults.QPS),
+		"resultRps":  fmt.Sprintf("%f", cliResults.ResultRps),
+		"MiBs":       fmt.Sprintf("%f", cliResults.MiBs),
+		"RPS":        fmt.Sprintf("%f", cliResults.RPS),
+	}, nil
 }

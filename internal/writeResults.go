@@ -3,9 +3,8 @@ package internal
 import (
 	"fmt"
 	"os"
-	"strings"
 
-	md "github.com/go-spectest/markdown"
+	md "github.com/nao1215/markdown"
 )
 
 func bytesToMiB(bytes uint64) float64 {
@@ -49,44 +48,12 @@ func WriteResults(results []BenchmarkResults, path string) error {
 		md.Bold("Result MiB/s:")+" How many rows placed by the server to the result of a query per second",
 		md.Bold("RPS:")+" How many rows the server reads per second")
 
-	for moduleName, moduleResults := range resultsByModule {
+	for moduleName, _ := range resultsByModule {
 		doc.H2(fmt.Sprintf("%s Results", moduleName))
 		queryLogRows := [][]string{}
 		cliRows := [][]string{}
 		explainRows := [][]string{}
-		for _, result := range moduleResults {
-			queryLogRows = append(queryLogRows, []string{
-				result.QueryName,
-				fmt.Sprintf("%v", round(bytesToMiB(result.QueryLogBenchmarkResults.MemoryUsage))),
-				fmt.Sprintf("%v", result.QueryLogBenchmarkResults.ReadRows),
-				fmt.Sprintf("%v", round(bytesToMiB(result.QueryLogBenchmarkResults.ReadBytes))),
-				fmt.Sprintf("%v", round(bytesToMiB(result.QueryLogBenchmarkResults.ResultBytes))),
-				fmt.Sprintf("%v", result.QueryLogBenchmarkResults.ResultRows),
-				fmt.Sprintf("%v", result.QueryLogBenchmarkResults.OSCPUVirtualTimeMicroseconds),
-			})
 
-			cliRows = append(cliRows, []string{
-				result.QueryName,
-				fmt.Sprintf("%f", result.CliBenchmarkResults.QPS),
-				fmt.Sprintf("%f", result.CliBenchmarkResults.RPS),
-				fmt.Sprintf("%f", result.CliBenchmarkResults.ResultMiBs),
-				fmt.Sprintf("%f", result.CliBenchmarkResults.ResultRps),
-				fmt.Sprintf("%v", result.CliBenchmarkResults.Executions),
-			})
-
-			explainRows = append(explainRows, []string{
-				result.QueryName,
-				joinNumberArray(result.QueryExplainBenchmarkResult.MinMax.Granules[:]),
-				joinNumberArray(result.QueryExplainBenchmarkResult.MinMax.Parts[:]),
-				strings.Join(result.QueryExplainBenchmarkResult.MinMax.Keys, "/"),
-				joinNumberArray(result.QueryExplainBenchmarkResult.Partition.Granules[:]),
-				joinNumberArray(result.QueryExplainBenchmarkResult.Partition.Parts[:]),
-				strings.Join(result.QueryExplainBenchmarkResult.Partition.Keys, "/"),
-				joinNumberArray(result.QueryExplainBenchmarkResult.PrimaryKey.Granules[:]),
-				joinNumberArray(result.QueryExplainBenchmarkResult.PrimaryKey.Parts[:]),
-				strings.Join(result.QueryExplainBenchmarkResult.PrimaryKey.Keys, "/"),
-			})
-		}
 		doc.Table(md.TableSet{
 			Header: []string{"Query", "MemoryUsage", "ReadRows", "ReadMB", "ResultMB", "ResultRows", "CPU"},
 			Rows:   queryLogRows,

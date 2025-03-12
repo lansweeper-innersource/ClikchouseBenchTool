@@ -5,15 +5,12 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/alitto/pond"
 	"github.com/lansweeper/ClickhouseBenchTool/internal"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/benchmark"
-	"github.com/lansweeper/ClickhouseBenchTool/internal/datastore"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/db"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/schollz/progressbar/v3"
 )
 
 type tomlParams struct {
@@ -23,10 +20,9 @@ type tomlParams struct {
 // benchmarkCmd represents the benchmark command
 var benchmarkCmd = &cobra.Command{
 	Use:   "benchmark",
-	Short: "",
+	Short: "Runs the benchmark",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		ds := datastore.CreateDataStore()
 		cliPath, err := internal.CheckOrInstallCHCli()
 		if err != nil {
 			panic(err)
@@ -58,66 +54,38 @@ var benchmarkCmd = &cobra.Command{
 			panic(err)
 		}
 
-		modules, err := ds.GetModules(viper.GetString("directory"))
+		querylogBenchmark := benchmark.NewQueryLogBenchmark(conn)
+		explainBenchmark := benchmark.NewExplainBenchmark(conn)
+		cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
+			PathToCli:  cliPath,
+			Host:       clickHouseConfig.Host,
+			Port:       clickHouseConfig.Port,
+			Username:   clickHouseConfig.Username,
+			Password:   clickHouseConfig.Password,
+			Iterations: viper.GetInt("iterations"),
+			Database:   clickHouseConfig.Database,
+			Secure:     clickHouseConfig.Secure,
+		})
+
+		benchmarkSuite := suite.NewBenchmarkSuite(conn,
+			suite.BenchmarkSuiteConfig{
+				SuitePath:         viper.GetString("directory"),
+				SuiteQueryParams:  globalParams.Params,
+				NumWorkers:        viper.GetInt("maxWorkers"),
+				WorkerCapacity:    viper.GetInt("maxWorkerCapacity"),
+				Iterations:        viper.GetInt("iterations"),
+				ClickhouseCliPath: cliPath,
+				ClickHouseConfig:  clickHouseConfig,
+			},
+			suite.WithBenchmark(querylogBenchmark),
+			suite.WithBenchmark(explainBenchmark),
+			suite.WithBenchmark(cliBenchmark),
+		)
+
+		results, err := benchmarkSuite.RunSuite(cmd.Context())
+		fmt.Println(results)
 		if err != nil {
 			panic(err)
-		}
-
-		// Calculate the number of queries to be executed
-		numQueries := 0
-		for _, module := range modules {
-			numQueries += len(module.Queries)
-		}
-		resultsChan := make(chan internal.BenchmarkResults, numQueries)
-		var bar = progressbar.Default(int64(numQueries))
-
-		pool := pond.New(viper.GetInt("maxWorkers"), viper.GetInt("maxWorkerCapacity"))
-		defer pool.StopAndWait()
-
-		group, poolCtx := pool.GroupContext(cmd.Context())
-		for _, module := range modules {
-			for _, query := range module.Queries {
-				q := query
-				group.Submit(func() error {
-					params := globalParams.Params
-					for k, v := range q.Params {
-						params[k] = v
-					}
-					benchmarkResults, err := benchmark.RunBenchmark(poolCtx, benchmark.BenchmarkConfig{
-						Conn:             conn,
-						CliPath:          cliPath,
-						ClickHouseConfig: clickHouseConfig,
-						Query:            q.Query,
-						Params:           params,
-					})
-					if err != nil {
-						return err
-					}
-					benchmarkResults.ModuleName = module.Name
-					benchmarkResults.QueryName = q.Name
-					resultsChan <- benchmarkResults
-					bar.Add(1)
-					return nil
-				})
-			}
-		}
-		// bar.RenderBlank()
-		err = group.Wait()
-		if err != nil {
-			panic(err)
-		}
-
-		results := []internal.BenchmarkResults{}
-		for i := 0; i < numQueries; i++ {
-			r := <-resultsChan
-			results = append(results, r)
-		}
-		if err != nil {
-			fmt.Printf("Failed to run benchmark: %v", err)
-		}
-		err = internal.WriteResults(results, "results.md")
-		if err != nil {
-			fmt.Printf("Failed to write results: %v", err)
 		}
 	},
 }
@@ -140,6 +108,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("directory", "d", "queries", "Directory containing the modules to be executed")
 	rootCmd.PersistentFlags().IntP("maxWorkers", "", 1, "Number of workers to run the queries")
 	rootCmd.PersistentFlags().IntP("maxWorkerCapacity", "", 1, "Max capacity for each worker")
+	rootCmd.PersistentFlags().IntP("iterations", "i", 1, "Number of iterations to run the query")
 
 	viper.BindPFlag("database.port", rootCmd.PersistentFlags().Lookup("port"))
 	viper.BindPFlag("database.host", rootCmd.PersistentFlags().Lookup("host"))
@@ -149,4 +118,5 @@ func init() {
 	viper.BindPFlag("directory", rootCmd.PersistentFlags().Lookup("directory"))
 	viper.BindPFlag("maxWorkers", rootCmd.PersistentFlags().Lookup("maxWorkers"))
 	viper.BindPFlag("maxWorkerCapacity", rootCmd.PersistentFlags().Lookup("maxWorkerCapacity"))
+	viper.BindPFlag("iterations", rootCmd.PersistentFlags().Lookup("iterations"))
 }
