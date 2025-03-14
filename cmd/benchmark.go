@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -54,18 +55,17 @@ var benchmarkCmd = &cobra.Command{
 			panic(err)
 		}
 
-		querylogBenchmark := benchmark.NewQueryLogBenchmark(conn)
-		explainBenchmark := benchmark.NewExplainBenchmark(conn)
-		cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
-			PathToCli:  cliPath,
-			Host:       clickHouseConfig.Host,
-			Port:       clickHouseConfig.Port,
-			Username:   clickHouseConfig.Username,
-			Password:   clickHouseConfig.Password,
-			Iterations: viper.GetInt("iterations"),
-			Database:   clickHouseConfig.Database,
-			Secure:     clickHouseConfig.Secure,
-		})
+		// explainBenchmark := benchmark.NewExplainBenchmark(conn)
+		// cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
+		// 	PathToCli:  cliPath,
+		// 	Host:       clickHouseConfig.Host,
+		// 	Port:       clickHouseConfig.Port,
+		// 	Username:   clickHouseConfig.Username,
+		// 	Password:   clickHouseConfig.Password,
+		// 	Iterations: viper.GetInt("iterations"),
+		// 	Database:   clickHouseConfig.Database,
+		// 	Secure:     clickHouseConfig.Secure,
+		// })
 
 		benchmarkSuite := suite.NewBenchmarkSuite(conn,
 			suite.BenchmarkSuiteConfig{
@@ -77,13 +77,16 @@ var benchmarkCmd = &cobra.Command{
 				ClickhouseCliPath: cliPath,
 				ClickHouseConfig:  clickHouseConfig,
 			},
-			suite.WithBenchmark(querylogBenchmark),
-			suite.WithBenchmark(explainBenchmark),
-			suite.WithBenchmark(cliBenchmark),
+			suite.WithBenchmark(benchmark.NewQueryLogBenchmark(conn)),
+			suite.WithBenchmark(benchmark.NewQueryResultsBenchmark(conn)),
+			// suite.WithBenchmark(explainBenchmark),
+			// suite.WithBenchmark(cliBenchmark),
 		)
 
 		results, err := benchmarkSuite.RunSuite(cmd.Context())
 		fmt.Println(results)
+		resultsJson, err := json.Marshal(results)
+		fmt.Println(string(resultsJson))
 		if err != nil {
 			panic(err)
 		}

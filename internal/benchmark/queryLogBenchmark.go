@@ -3,11 +3,11 @@ package benchmark
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/google/uuid"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 )
 
 const QueryLogBenchmarkName = "queryLogBenchmark"
@@ -51,22 +51,11 @@ func (qlb *QueryLogBenchmark) Run(ctx context.Context, queryParams map[string]an
 		interfaceParams[i] = v
 	}
 
-	rows, err := qlb.conn.Query(clickhouse.Context(ctx, clickhouse.WithQueryID(queryId.String())), query, interfaceParams...)
+	_, err := qlb.conn.Query(clickhouse.Context(ctx, clickhouse.WithQueryID(queryId.String())), query, interfaceParams...)
 	if err != nil {
 		return map[string]string{}, fmt.Errorf("run query log benchmark: %w", err)
 	}
 
-	var columnTypes = rows.ColumnTypes()
-	for rows.Next() {
-		vars := make([]interface{}, len(columnTypes))
-		for i := range columnTypes {
-			vars[i] = reflect.New(columnTypes[i].ScanType()).Interface()
-		}
-		err := rows.Scan(vars...)
-		if err != nil {
-			return map[string]string{}, fmt.Errorf("scan row: %w", err)
-		}
-	}
 	// Search query in query logs
 	err = qlb.conn.Exec(ctx, "SYSTEM FLUSH LOGS ON CLUSTER default")
 	if err != nil {
@@ -109,4 +98,8 @@ func (qlb *QueryLogBenchmark) Run(ctx context.Context, queryParams map[string]an
 		"os_cpu_virtual_time":          fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTime),
 		"os_cpu_virtual_time_readable": fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTimeReadable),
 	}, nil
+}
+
+func (qlb *QueryLogBenchmark) OnModuleEnd(results suite.BenchmarkResults) (map[string]string, error) {
+	return nil, nil
 }

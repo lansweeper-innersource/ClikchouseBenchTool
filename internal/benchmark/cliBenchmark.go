@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 )
 
 type cliBenchmarkResults struct {
@@ -129,4 +130,8 @@ func (qlb *CliBenchmark) Run(ctx context.Context, queryParams map[string]any, qu
 		"MiBs":       fmt.Sprintf("%f", cliResults.MiBs),
 		"RPS":        fmt.Sprintf("%f", cliResults.RPS),
 	}, nil
+}
+
+func (qlb *CliBenchmark) OnModuleEnd(results suite.BenchmarkResults) error {
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/PaesslerAG/gval"
 	"github.com/PaesslerAG/jsonpath"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 )
 
 type queryExplainResultData struct {
@@ -127,6 +128,10 @@ func (qlb *ExplainBenchmark) Run(ctx context.Context, queryParams map[string]any
 		"primaryKeyParts":    joinNumberArray(result.PrimaryKey.Parts[:]),
 		"primaryKeykeys":     strings.Join(result.PrimaryKey.Keys, "/"),
 	}, nil
+}
+
+func (qlb *ExplainBenchmark) OnModuleEnd(results suite.BenchmarkResults) error {
+	return nil
 }
 
 func flatten(nested []interface{}) []interface{} {
