@@ -109,6 +109,10 @@ func (s *BenchmarkSuite) RunSuite(ctx context.Context) (SuiteResults, error) {
 	return results, nil
 }
 
+func (s *BenchmarkSuite) WriteResults(w BenchmarkResultsWritter) {
+	w.Write()
+}
+
 func WithBenchmark(benchmark Benchmark) func(*BenchmarkSuite) {
 	return func(s *BenchmarkSuite) {
 		s.benchmarks = append(s.benchmarks, benchmark)

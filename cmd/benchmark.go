@@ -83,6 +83,10 @@ var benchmarkCmd = &cobra.Command{
 			// suite.WithBenchmark(cliBenchmark),
 		)
 
+		// Output benchmark results
+		benchmarkResultsWritter := NewBenchmarkResultsWritter()
+		benchmarkSuite.WriteResults(benchmarkResultsWritter)
+
 		results, err := benchmarkSuite.RunSuite(cmd.Context())
 		fmt.Println(results)
 		resultsJson, err := json.Marshal(results)
