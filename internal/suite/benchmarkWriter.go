@@ -1,5 +1,5 @@
 package suite
 
-type BenchmarkWritter interface {
+type BenchmarkWriter interface {
 	Write(results SuiteResults) error
 }

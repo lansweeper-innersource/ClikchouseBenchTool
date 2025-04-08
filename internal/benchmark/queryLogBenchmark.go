@@ -12,6 +12,22 @@ import (
 
 const QueryLogBenchmarkName = "queryLogBenchmark"
 
+type QueryLogBenchmarkResultKeys string
+
+const (
+	LogQueryNameKey             QueryLogBenchmarkResultKeys = "query_name"
+	ReadBytesKey                QueryLogBenchmarkResultKeys = "read_bytes"
+	ReadBytesReadableKey        QueryLogBenchmarkResultKeys = "read_bytes_readable"
+	ResultBytesKey              QueryLogBenchmarkResultKeys = "result_bytes"
+	ResultBytesReadableKey      QueryLogBenchmarkResultKeys = "result_bytes_readable"
+	ReadRowsKey                 QueryLogBenchmarkResultKeys = "read_rows"
+	ResultRowsKey               QueryLogBenchmarkResultKeys = "result_rows"
+	MemoryUsageKey              QueryLogBenchmarkResultKeys = "memory_usage"
+	MemoryUsageReadableKey      QueryLogBenchmarkResultKeys = "memory_usage_readable"
+	OSCPUVirtualTimeKey         QueryLogBenchmarkResultKeys = "os_cpu_virtual_time"
+	OSCPUVirtualTimeReadableKey QueryLogBenchmarkResultKeys = "os_cpu_virtual_time_readable"
+)
+
 type queryLogChResults struct {
 	ReadBytes                uint64 `ch:"read_bytes"`
 	ReadBytesReadable        string `ch:"read_bytes_readable"`
@@ -39,7 +55,7 @@ func (qlb *QueryLogBenchmark) Name() string {
 	return QueryLogBenchmarkName
 }
 
-func (qlb *QueryLogBenchmark) Run(ctx context.Context, queryParams map[string]any, query string) (map[string]string, error) {
+func (qlb *QueryLogBenchmark) Run(ctx context.Context, queryParams map[string]any, queryName string, query string) (map[string]string, error) {
 	queryId := uuid.New()
 
 	params := []driver.NamedValue{}
@@ -87,16 +103,17 @@ func (qlb *QueryLogBenchmark) Run(ctx context.Context, queryParams map[string]an
 	}
 
 	return map[string]string{
-		"read_bytes":                   fmt.Sprintf("%v", queryLogResults.ReadBytes),
-		"read_bytes_readable":          fmt.Sprintf("%v", queryLogResults.ReadBytesReadable),
-		"result_bytes":                 fmt.Sprintf("%v", queryLogResults.ResultBytes),
-		"result_bytes_readable":        fmt.Sprintf("%v", queryLogResults.ResultBytesReadable),
-		"read_rows":                    fmt.Sprintf("%v", queryLogResults.ReadRows),
-		"result_rows":                  fmt.Sprintf("%v", queryLogResults.ResultRows),
-		"memory_usage":                 fmt.Sprintf("%v", queryLogResults.MemoryUsage),
-		"memory_usage_readable":        fmt.Sprintf("%v", queryLogResults.MemoryUsageReadable),
-		"os_cpu_virtual_time":          fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTime),
-		"os_cpu_virtual_time_readable": fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTimeReadable),
+		string(LogQueryNameKey):             queryName,
+		string(ReadBytesKey):                fmt.Sprintf("%v", queryLogResults.ReadBytes),
+		string(ReadBytesReadableKey):        fmt.Sprintf("%v", queryLogResults.ReadBytesReadable),
+		string(ResultBytesKey):              fmt.Sprintf("%v", queryLogResults.ResultBytes),
+		string(ResultBytesReadableKey):      fmt.Sprintf("%v", queryLogResults.ResultBytesReadable),
+		string(ReadRowsKey):                 fmt.Sprintf("%v", queryLogResults.ReadRows),
+		string(ResultRowsKey):               fmt.Sprintf("%v", queryLogResults.ResultRows),
+		string(MemoryUsageKey):              fmt.Sprintf("%v", queryLogResults.MemoryUsage),
+		string(MemoryUsageReadableKey):      fmt.Sprintf("%v", queryLogResults.MemoryUsageReadable),
+		string(OSCPUVirtualTimeKey):         fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTime),
+		string(OSCPUVirtualTimeReadableKey): fmt.Sprintf("%v", queryLogResults.OSCPUVirtualTimeReadable),
 	}, nil
 }
 

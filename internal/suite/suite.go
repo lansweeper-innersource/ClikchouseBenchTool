@@ -3,6 +3,7 @@ package suite
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/alitto/pond"
@@ -34,6 +35,7 @@ type BenchmarkSuite struct {
 	Conn        driver.Conn
 	SuiteConfig BenchmarkSuiteConfig
 	benchmarks  []Benchmark
+	writers     []BenchmarkWriter
 }
 
 type BenchmarkSuiteOption func(*BenchmarkSuite)
@@ -43,6 +45,7 @@ func NewBenchmarkSuite(conn driver.Conn, config BenchmarkSuiteConfig, options ..
 		Conn:        conn,
 		benchmarks:  []Benchmark{},
 		SuiteConfig: config,
+		writers:     []BenchmarkWriter{},
 	}
 	for _, option := range options {
 		option(suite)
@@ -84,7 +87,8 @@ func (s *BenchmarkSuite) RunSuite(ctx context.Context) (SuiteResults, error) {
 					for k, v := range q.Params {
 						params[k] = v
 					}
-					result, err := benchmark.Run(poolCtx, params, q.Query)
+					queryName := strings.TrimSuffix(q.Name, ".sql")
+					result, err := benchmark.Run(poolCtx, params, queryName, q.Query)
 					results[module.Name].BenchmarkResultsMap[benchmark.Name()][queryIndex] = result
 					if err != nil {
 						return fmt.Errorf("run benchmark: %w", err)
@@ -106,15 +110,25 @@ func (s *BenchmarkSuite) RunSuite(ctx context.Context) (SuiteResults, error) {
 	if err != nil {
 		return results, fmt.Errorf("run benchmark: %w", err)
 	}
-	return results, nil
-}
 
-func (s *BenchmarkSuite) WriteResults(w BenchmarkResultsWritter) {
-	w.Write()
+	for _, writer := range s.writers {
+		err := writer.Write(results)
+		if err != nil {
+			return results, fmt.Errorf("write benchmark: %w", err)
+		}
+	}
+
+	return results, nil
 }
 
 func WithBenchmark(benchmark Benchmark) func(*BenchmarkSuite) {
 	return func(s *BenchmarkSuite) {
 		s.benchmarks = append(s.benchmarks, benchmark)
+	}
+}
+
+func WithBenchmarkWrite(w BenchmarkWriter) func(*BenchmarkSuite) {
+	return func(s *BenchmarkSuite) {
+		s.writers = append(s.writers, w)
 	}
 }

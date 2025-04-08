@@ -8,6 +8,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/lansweeper/ClickhouseBenchTool/internal"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/benchmark"
+	benchmarkwriter "github.com/lansweeper/ClickhouseBenchTool/internal/benchmarkWriter"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/db"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 	"github.com/spf13/cobra"
@@ -55,17 +56,17 @@ var benchmarkCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// explainBenchmark := benchmark.NewExplainBenchmark(conn)
-		// cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
-		// 	PathToCli:  cliPath,
-		// 	Host:       clickHouseConfig.Host,
-		// 	Port:       clickHouseConfig.Port,
-		// 	Username:   clickHouseConfig.Username,
-		// 	Password:   clickHouseConfig.Password,
-		// 	Iterations: viper.GetInt("iterations"),
-		// 	Database:   clickHouseConfig.Database,
-		// 	Secure:     clickHouseConfig.Secure,
-		// })
+		explainBenchmark := benchmark.NewExplainBenchmark(conn)
+		cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
+			PathToCli:  cliPath,
+			Host:       clickHouseConfig.Host,
+			Port:       clickHouseConfig.Port,
+			Username:   clickHouseConfig.Username,
+			Password:   clickHouseConfig.Password,
+			Iterations: viper.GetInt("iterations"),
+			Database:   clickHouseConfig.Database,
+			Secure:     clickHouseConfig.Secure,
+		})
 
 		benchmarkSuite := suite.NewBenchmarkSuite(conn,
 			suite.BenchmarkSuiteConfig{
@@ -79,13 +80,10 @@ var benchmarkCmd = &cobra.Command{
 			},
 			suite.WithBenchmark(benchmark.NewQueryLogBenchmark(conn)),
 			suite.WithBenchmark(benchmark.NewQueryResultsBenchmark(conn)),
-			// suite.WithBenchmark(explainBenchmark),
-			// suite.WithBenchmark(cliBenchmark),
+			suite.WithBenchmarkWrite(benchmarkwriter.NewMdLogWriter()),
+			suite.WithBenchmark(explainBenchmark),
+			suite.WithBenchmark(cliBenchmark),
 		)
-
-		// Output benchmark results
-		benchmarkResultsWritter := NewBenchmarkResultsWritter()
-		benchmarkSuite.WriteResults(benchmarkResultsWritter)
 
 		results, err := benchmarkSuite.RunSuite(cmd.Context())
 		fmt.Println(results)

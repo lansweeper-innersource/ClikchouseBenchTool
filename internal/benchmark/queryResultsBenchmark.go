@@ -33,7 +33,7 @@ func (qlb *QueryResultsBenchmark) Name() string {
 	return QueryResultsBenchmarkName
 }
 
-func (qlb *QueryResultsBenchmark) Run(ctx context.Context, queryParams map[string]any, query string) (map[string]string, error) {
+func (qlb *QueryResultsBenchmark) Run(ctx context.Context, queryParams map[string]any, queryName string, query string) (map[string]string, error) {
 	queryId := uuid.New()
 
 	params := []driver.NamedValue{}
