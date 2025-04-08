@@ -227,22 +227,39 @@ func (mlw *MdLogWriter) Write(results suite.SuiteResults) error {
 				}
 				doc.PlainTextf(md.Image(testName, qpsFilePath))
 
-				valuesPerQueryFromMIBS := ObtainValuesPerQuery("QPS", benchmark)
+				valuesPerQueryFromMIBS := ObtainValuesPerQuery("MiBs", benchmark)
 				mibsPlotParams := CreatePlotParams{
 					ValuePerQuery: valuesPerQueryFromMIBS,
 					TestName:      testName,
 					Doc:           doc,
 					Index:         testIndex,
-					File:          "QPS",
-					PTitleText:    "Queries per second comparison",
+					File:          "MiBs",
+					PTitleText:    "MiB per second comparison",
 					PXLabelText:   "Queries",
-					PYLabelText:   "Quries Per Second",
+					PYLabelText:   "MiB Per Second",
 				}
 				mibsFilePath, err := PlotCreator(mibsPlotParams)
 				if err != nil {
 					return fmt.Errorf("error creating MIBS plot: %w", err)
 				}
 				doc.PlainTextf(md.Image(testName, mibsFilePath))
+
+				valuesPerQueryFromRPS := ObtainValuesPerQuery("RPS", benchmark)
+				rpsPlotParams := CreatePlotParams{
+					ValuePerQuery: valuesPerQueryFromRPS,
+					TestName:      testName,
+					Doc:           doc,
+					Index:         testIndex,
+					File:          "RPS",
+					PTitleText:    "Request per second comparison",
+					PXLabelText:   "Queries",
+					PYLabelText:   "Request Per Second",
+				}
+				rpsFilePath, err := PlotCreator(rpsPlotParams)
+				if err != nil {
+					return fmt.Errorf("error creating RPS plot: %w", err)
+				}
+				doc.PlainTextf(md.Image(testName, rpsFilePath))
 
 			default:
 				fmt.Println("Unknown Benchmark")
