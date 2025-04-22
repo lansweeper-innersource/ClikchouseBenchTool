@@ -10,6 +10,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/PaesslerAG/gval"
 	"github.com/PaesslerAG/jsonpath"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 )
 
 type queryExplainResultData struct {
@@ -24,6 +25,21 @@ type queryExplainBenchmarkData struct {
 	Partition  queryExplainResultData
 	PrimaryKey queryExplainResultData
 }
+
+type ExplainBenchmarkResultKeys string
+
+const (
+	ExplainQueryKey       ExplainBenchmarkResultKeys = "query_name"
+	MinMaxGranulesKey     ExplainBenchmarkResultKeys = "minMaxGranules"
+	MinMaxPartsKey        ExplainBenchmarkResultKeys = "minMaxParts"
+	MinMaxkeysKey         ExplainBenchmarkResultKeys = "minMaxkeys"
+	PartitionGranulesKey  ExplainBenchmarkResultKeys = "partitionGranules"
+	PartitionPartsKey     ExplainBenchmarkResultKeys = "partitionParts"
+	PartitionkeysKey      ExplainBenchmarkResultKeys = "partitionkeys"
+	PrimaryKeyGranulesKey ExplainBenchmarkResultKeys = "primaryKeyGranules"
+	PrimaryKeyPartsKey    ExplainBenchmarkResultKeys = "primaryKeyParts"
+	PrimaryKeykeysKey     ExplainBenchmarkResultKeys = "primaryKeykeys"
+)
 
 const ExplainBenchmarkName = "explainBenchmark"
 
@@ -41,7 +57,7 @@ func (qlb *ExplainBenchmark) Name() string {
 	return ExplainBenchmarkName
 }
 
-func (qlb *ExplainBenchmark) Run(ctx context.Context, queryParams map[string]any, query string) (map[string]string, error) {
+func (qlb *ExplainBenchmark) Run(ctx context.Context, queryParams map[string]any, queryName string, query string) (map[string]string, error) {
 	result := queryExplainBenchmarkData{}
 	explainQuery := fmt.Sprintf("EXPLAIN indexes = 1, json = 1, description = 1 %s FORMAT TSVRaw", query)
 
@@ -117,16 +133,21 @@ func (qlb *ExplainBenchmark) Run(ctx context.Context, queryParams map[string]any
 		}
 	}
 	return map[string]string{
-		"minMaxGranules":     joinNumberArray(result.MinMax.Granules[:]),
-		"minMaxParts":        joinNumberArray(result.MinMax.Parts[:]),
-		"minMaxkeys":         strings.Join(result.MinMax.Keys, "/"),
-		"partitionGranules":  joinNumberArray(result.Partition.Granules[:]),
-		"partitionParts":     joinNumberArray(result.Partition.Parts[:]),
-		"partitionkeys":      strings.Join(result.Partition.Keys, "/"),
-		"primaryKeyGranules": joinNumberArray(result.PrimaryKey.Granules[:]),
-		"primaryKeyParts":    joinNumberArray(result.PrimaryKey.Parts[:]),
-		"primaryKeykeys":     strings.Join(result.PrimaryKey.Keys, "/"),
+		string(ExplainQueryKey):       queryName,
+		string(MinMaxGranulesKey):     joinNumberArray(result.MinMax.Granules[:]),
+		string(MinMaxPartsKey):        joinNumberArray(result.MinMax.Parts[:]),
+		string(MinMaxkeysKey):         strings.Join(result.MinMax.Keys, "/"),
+		string(PartitionGranulesKey):  joinNumberArray(result.Partition.Granules[:]),
+		string(PartitionPartsKey):     joinNumberArray(result.Partition.Parts[:]),
+		string(PartitionkeysKey):      strings.Join(result.Partition.Keys, "/"),
+		string(PrimaryKeyGranulesKey): joinNumberArray(result.PrimaryKey.Granules[:]),
+		string(PrimaryKeyPartsKey):    joinNumberArray(result.PrimaryKey.Parts[:]),
+		string(PrimaryKeykeysKey):     strings.Join(result.PrimaryKey.Keys, "/"),
 	}, nil
+}
+
+func (qlb *ExplainBenchmark) OnModuleEnd(results suite.BenchmarkResults) (map[string]string, error) {
+	return nil, nil
 }
 
 func flatten(nested []interface{}) []interface{} {

@@ -1,0 +1,1010 @@
+[
+  {
+    "name": "Query with 1 string select",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,`assetKeyMeta`\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with 1 datetime select",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "ipAddress",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "firstSeen",
+          "type": "datetime"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT ipAddress,firstSeen_RFC3339,`assetKeyMeta`\nFROM (\n  SELECT ipAddress,formatDateTime(firstSeen, '%FT%T.000Z') as firstSeen_RFC3339,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with multiple selects",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "ipAddress",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "type": "number"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,ipAddress,sqlserverSpLevel,`assetKeyMeta`\nFROM (\n  SELECT assetName,ipAddress,sqlserverSpLevel,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with one string select and one filter",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "assetName",
+            "expression": "=",
+            "value": [
+              "value eq"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": "value eq",
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,`assetKeyMeta`\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((assetName ILIKE {analyticFilterParam0:String})) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with multiple selects and multiple filter",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "ipAddress",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "type": "number"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "assetName",
+            "expression": "=",
+            "value": [
+              "value eq name"
+            ]
+          },
+          {
+            "column_id": "ipAddress",
+            "expression": "=",
+            "value": [
+              "value eq ip"
+            ]
+          },
+          {
+            "or": [
+              {
+                "column_id": "sqlserverSpLevel",
+                "expression": ">=",
+                "value": [
+                  "value gte 1"
+                ]
+              },
+              {
+                "column_id": "assetName",
+                "expression": "=",
+                "value": [
+                  "value eq 2"
+                ]
+              },
+              {
+                "or": [
+                  {
+                    "column_id": "sqlserverSpLevel",
+                    "expression": "<=",
+                    "value": [
+                      "value lte 3"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": "value eq name",
+        "analyticFilterParam1": "value eq ip",
+        "analyticFilterParam2": "value gte 1",
+        "analyticFilterParam3": "value eq 2",
+        "analyticFilterParam4": "value lte 3",
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,ipAddress,sqlserverSpLevel,`assetKeyMeta`\nFROM (\n  SELECT assetName,ipAddress,sqlserverSpLevel,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((assetName ILIKE {analyticFilterParam0:String} AND ipAddress ILIKE {analyticFilterParam1:String} AND (sqlserverSpLevel >= {analyticFilterParam2:DOUBLE} OR assetName ILIKE {analyticFilterParam3:String} OR (sqlserverSpLevel <= {analyticFilterParam4:DOUBLE})))) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with multiple selects and is null/is not null exist filters",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "ipAddress",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "assetName",
+            "expression": "is null"
+          },
+          {
+            "column_id": "ipAddress",
+            "expression": "is not null"
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,ipAddress,`assetKeyMeta`\nFROM (\n  SELECT assetName,ipAddress,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND (((assetName IS NULL OR empty(assetName)) AND ipAddress IS NOT NULL AND notEmpty(ipAddress))) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with multiple selects and is contains/not contains filters",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "ipAddress",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "assetName",
+            "expression": "ilike",
+            "value": [
+              "value ilike name"
+            ]
+          },
+          {
+            "column_id": "ipAddress",
+            "expression": "not ilike",
+            "value": [
+              "value not ilike ipAddress"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": "%value ilike name%",
+        "analyticFilterParam1": "%value not ilike ipAddress%",
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,ipAddress,`assetKeyMeta`\nFROM (\n  SELECT assetName,ipAddress,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((assetName ILIKE {analyticFilterParam0:String} AND ipAddress NOT ILIKE {analyticFilterParam1:String})) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Simple count *",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "*",
+          "aggregation": "count",
+          "type": "numeric"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": true,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT count(assetKey) AS assetKeycount\nFROM (\n  SELECT assetKey\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\n)"
+    }
+  },
+  {
+    "name": "Simple distinct count *",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "*",
+          "aggregation": "distinctcount",
+          "type": "numeric"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": true,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT countDistinct(assetKey) AS assetKeydistinctcount\nFROM (\n  SELECT assetKey\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\n)"
+    }
+  },
+  {
+    "name": "Multiple aggregates",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "min",
+          "type": "numeric"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "max",
+          "type": "numeric"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "sum",
+          "type": "numeric"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": true,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT sqlserverSpLevel_min AS sqlserverSpLevelmin,sqlserverSpLevel_max AS sqlserverSpLevelmax,sqlserverSpLevel_sum AS sqlserverSpLevelsum\nFROM (\n  SELECT min(sqlserverSpLevel) as sqlserverSpLevel_min,max(sqlserverSpLevel) as sqlserverSpLevel_max,sum(sqlserverSpLevel) as sqlserverSpLevel_sum\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\n)"
+    }
+  },
+  {
+    "name": "Multiple aggregates with filters",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "min",
+          "type": "numeric"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "max",
+          "type": "numeric"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "sqlserverSpLevel",
+          "aggregation": "sum",
+          "type": "numeric"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "assetName",
+            "expression": "is null"
+          },
+          {
+            "column_id": "ipAddress",
+            "expression": "is not null"
+          }
+        ]
+      },
+      "options": {
+        "pushdown": true,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT sqlserverSpLevel_min AS sqlserverSpLevelmin,sqlserverSpLevel_max AS sqlserverSpLevelmax,sqlserverSpLevel_sum AS sqlserverSpLevelsum\nFROM (\n  SELECT min(sqlserverSpLevel) as sqlserverSpLevel_min,max(sqlserverSpLevel) as sqlserverSpLevel_max,sum(sqlserverSpLevel) as sqlserverSpLevel_sum\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND (((assetName IS NULL OR empty(assetName)) AND ipAddress IS NOT NULL AND notEmpty(ipAddress))) AND deletedEntity = false\n)"
+    }
+  },
+  {
+    "name": "Query with 1 array field ",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"software.standardizedName_join\" AS \"software.standardizedName\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(software.standardizedName)) as software,software.1 as \"software.standardizedName_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with 1 field and 1 low cardinality array",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "diskDrives.caption",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,diskDrives.caption,`assetKeyMeta`\nFROM (\n  SELECT assetName,diskDrives.caption,assetKey as `assetKeyMeta`\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with 1 low cardinality array with a count aggregation",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "diskDrives.caption",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "*",
+          "aggregation": "count",
+          "type": "numeric"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT \"diskDrives.caption_join\" AS \"diskDrives.caption\",count(assetKey) AS assetKeycount\nFROM (\n  SELECT assetKey,arrayJoin(arrayZip(diskDrives.caption)) as diskDrives,diskDrives.1 as \"diskDrives.caption_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\n)\nGROUP BY diskDrives.caption"
+    }
+  },
+  {
+    "name": "Query with 2 array field from the same entity",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedVersionString",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"software.standardizedName_join\" AS \"software.standardizedName\",\"software.standardizedVersionString_join\" AS \"software.standardizedVersionString\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(software.standardizedName,software.standardizedVersionString)) as software,software.1 as \"software.standardizedName_join\",software.2 as \"software.standardizedVersionString_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with 2 array field from the same entity with filters",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedVersionString",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "software.standardizedName",
+            "expression": "=",
+            "value": [
+              "value eq"
+            ]
+          },
+          {
+            "column_id": "software.standardizedVersionString",
+            "expression": "=",
+            "value": [
+              "value eq"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": "value eq",
+        "analyticFilterParam1": "value eq",
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"software.standardizedName_join\" AS \"software.standardizedName\",\"software.standardizedVersionString_join\" AS \"software.standardizedVersionString\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(software.standardizedName,software.standardizedVersionString)) as software,software.1 as \"software.standardizedName_join\",software.2 as \"software.standardizedVersionString_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((software.standardizedName_join ILIKE {analyticFilterParam0:String} AND software.standardizedVersionString_join ILIKE {analyticFilterParam1:String})) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with 1 low cardinality array and 1 high cardinality array",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "diskDrives.caption",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedVersionString",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": [],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,diskDrives.caption,\"software.standardizedName_join\" AS \"software.standardizedName\",\"software.standardizedVersionString_join\" AS \"software.standardizedVersionString\"\nFROM (\n  SELECT assetName,diskDrives.caption,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(software.standardizedName,software.standardizedVersionString)) as software,software.1 as \"software.standardizedName_join\",software.2 as \"software.standardizedVersionString_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query with a low cardinality array, a high cardinality array and a filter by the low cardinality array",
+    "luzmoQuery": {
+      "id": "luzmoInventory",
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "diskDrives.caption",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedVersionString",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedArchitecture",
+          "type": "hierarchy"
+        }
+      ],
+      "options": {
+        "pushdown": false,
+        "timezone_id": "UTC",
+        "query_timeout": 120
+      },
+      "filters": {
+        "and": [
+          {
+            "dataset_id": "luzmoInventory",
+            "column_id": "assetName",
+            "expression": "is not null"
+          },
+          {
+            "dataset_id": "luzmoInventory",
+            "column_id": "diskDrives.caption",
+            "expression": "in",
+            "value": [
+              "C:"
+            ]
+          }
+        ]
+      },
+      "join": [],
+      "order": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "order": "asc",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoSoftwareInstallation",
+          "column_id": "software.standardizedName",
+          "order": "asc",
+          "type": "hierarchy"
+        }
+      ]
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": [
+          "c:"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"diskDrives.caption_join\" AS \"diskDrives.caption\",\"software.standardizedName_join\" AS \"software.standardizedName\",\"software.standardizedVersionString_join\" AS \"software.standardizedVersionString\",\"software.standardizedArchitecture_join\" AS \"software.standardizedArchitecture\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(diskDrives.caption)) as diskDrives,diskDrives.1 as \"diskDrives.caption_join\",arrayJoin(arrayZip(software.standardizedName,software.standardizedVersionString,software.standardizedArchitecture)) as software,software.1 as \"software.standardizedName_join\",software.2 as \"software.standardizedVersionString_join\",software.3 as \"software.standardizedArchitecture_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((assetName IS NOT NULL AND notEmpty(assetName) AND lower(diskDrives.caption_join) IN {analyticFilterParam0:Array(String)})) AND deletedEntity = false\nORDER BY nullIf(assetName, '') ASC, `software.standardizedName_join` ASC, siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query 1 array of string arrays",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.causedBy.category",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"vulnerability.causedBy.category_join\" AS \"vulnerability.causedBy.category\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,arrayJoin(arrayZip(vulnerability.causedBy.category)) as vulnerability,arrayJoin(arrayZip(vulnerability.1)) as \"vulnerability1\",arrayJoin(vulnerability1.1) as \"vulnerability.causedBy.category_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query several array of string arrays with other arrays of the same entity",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.cveId",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.severity",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.causedBy.category",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.causedBy.product",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"vulnerability.cveId_join\" AS \"vulnerability.cveId\",\"vulnerability.severity_join\" AS \"vulnerability.severity\",\"vulnerability.causedBy.category_join\" AS \"vulnerability.causedBy.category\",\"vulnerability.causedBy.product_join\" AS \"vulnerability.causedBy.product\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,vulnerability.severityLabel as `vulnerability.severityLabelMeta`,arrayJoin(arrayZip(vulnerability.cveId,vulnerability.severity,vulnerability.causedBy.category,vulnerability.causedBy.product)) as vulnerability,vulnerability.1 as \"vulnerability.cveId_join\",vulnerability.2 as \"vulnerability.severity_join\",arrayJoin(arrayZip(vulnerability.3)) as \"vulnerability3\",arrayJoin(vulnerability3.1) as \"vulnerability.causedBy.category_join\",arrayJoin(arrayZip(vulnerability.4)) as \"vulnerability4\",arrayJoin(vulnerability4.1) as \"vulnerability.causedBy.product_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Query several array of string arrays with other arrays of the same entity and filters",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoInventory",
+          "column_id": "assetName",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.cveId",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.severity",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.causedBy.category",
+          "type": "hierarchy"
+        },
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "vulnerability.causedBy.product",
+          "type": "hierarchy"
+        }
+      ],
+      "filters": {
+        "and": [
+          {
+            "column_id": "vulnerability.cveId",
+            "expression": "=",
+            "value": [
+              "value eq cveId"
+            ]
+          },
+          {
+            "column_id": "vulnerability.severity",
+            "expression": "=",
+            "value": [
+              "value eq severity"
+            ]
+          },
+          {
+            "column_id": "vulnerability.causedBy.category",
+            "expression": "=",
+            "value": [
+              "value eq category"
+            ]
+          },
+          {
+            "column_id": "vulnerability.causedBy.product",
+            "expression": "=",
+            "value": [
+              "value eq product"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "analyticFilterParam0": "value eq cveId",
+        "analyticFilterParam1": "value eq severity",
+        "analyticFilterParam2": "value eq category",
+        "analyticFilterParam3": "value eq product",
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT assetName,\"vulnerability.cveId_join\" AS \"vulnerability.cveId\",\"vulnerability.severity_join\" AS \"vulnerability.severity\",\"vulnerability.causedBy.category_join\" AS \"vulnerability.causedBy.category\",\"vulnerability.causedBy.product_join\" AS \"vulnerability.causedBy.product\"\nFROM (\n  SELECT assetName,assetKey as `assetKeyMeta`,vulnerability.severityLabel as `vulnerability.severityLabelMeta`,arrayJoin(arrayZip(vulnerability.cveId,vulnerability.severity,vulnerability.causedBy.category,vulnerability.causedBy.product)) as vulnerability,vulnerability.1 as \"vulnerability.cveId_join\",vulnerability.2 as \"vulnerability.severity_join\",arrayJoin(arrayZip(vulnerability.3)) as \"vulnerability3\",arrayJoin(vulnerability3.1) as \"vulnerability.causedBy.category_join\",arrayJoin(arrayZip(vulnerability.4)) as \"vulnerability4\",arrayJoin(vulnerability4.1) as \"vulnerability.causedBy.product_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND ((vulnerability.cveId_join ILIKE {analyticFilterParam0:String} AND vulnerability.severity_join = {analyticFilterParam1:FLOAT} AND vulnerability.causedBy.category_join ILIKE {analyticFilterParam2:String} AND vulnerability.causedBy.product_join ILIKE {analyticFilterParam3:String})) AND deletedEntity = false\nORDER BY siteId ASC, assetKey ASC\n)"
+    }
+  },
+  {
+    "name": "Count * for array field",
+    "luzmoQuery": {
+      "columns": [
+        {
+          "dataset_id": "luzmoVulnerabilities",
+          "column_id": "*",
+          "aggregation": "count",
+          "type": "numeric"
+        }
+      ],
+      "filters": {},
+      "options": {
+        "pushdown": false,
+        "timezone_id": "Europe/Brussels",
+        "query_timeout": 118
+      },
+      "join": [],
+      "order": []
+    },
+    "clickhouseQuery": {
+      "params": {
+        "siteIds": [
+          "a111bca2-3333-4b5c-a6b7-8c9999a11b9b"
+        ],
+        "createAtField": "2025-02-13"
+      },
+      "query": "SELECT count(vulnerability.cveId_join) AS `vulnerability.cveIdcount`\nFROM (\n  SELECT arrayJoin(arrayZip(vulnerability.cveId)) as vulnerability,vulnerability.1 as \"vulnerability.cveId_join\"\n  FROM assets.assets_view \n  WHERE (siteId,assetKey,registryCreatedAt) IN (\n  SELECT siteId,assetKey, max(registryCreatedAt) as registryCreatedAt\n  FROM assets.assets_view\n  WHERE siteId IN {siteIds:Array(String)}  AND assets_view.registryCreatedAt >= {createAtField:DateTime64(3)}\n  GROUP BY siteId,assetKey\n) AND deletedEntity = false\n)"
+    }
+  }
+]

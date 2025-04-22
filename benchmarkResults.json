@@ -1,0 +1,92 @@
+{
+  "test1": {
+    "BenchmarkResultsMap": {
+      "cliBenchmark": [
+        {
+          "MiBs": "1.426000",
+          "QPS": "1.671000",
+          "RPS": "31900.986000",
+          "executions": "1",
+          "resultMiBs": "0.002000",
+          "resultRps": "167.117000"
+        },
+        {
+          "MiBs": "1.556000",
+          "QPS": "1.823000",
+          "RPS": "34798.003000",
+          "executions": "1",
+          "resultMiBs": "0.002000",
+          "resultRps": "182.293000"
+        }
+      ],
+      "explainBenchmark": [
+        {
+          "minMaxGranules": "3303/1700",
+          "minMaxParts": "23/4",
+          "minMaxkeys": "registryCreatedAt",
+          "partitionGranules": "1700/1700",
+          "partitionParts": "4/4",
+          "partitionkeys": "toYYYYMM(registryCreatedAt)",
+          "primaryKeyGranules": "1700/19",
+          "primaryKeyParts": "4/4",
+          "primaryKeykeys": "assetKey"
+        },
+        {
+          "minMaxGranules": "3303/1700",
+          "minMaxParts": "23/4",
+          "minMaxkeys": "registryCreatedAt",
+          "partitionGranules": "1700/1700",
+          "partitionParts": "4/4",
+          "partitionkeys": "toYYYYMM(registryCreatedAt)",
+          "primaryKeyGranules": "1700/19",
+          "primaryKeyParts": "4/4",
+          "primaryKeykeys": "assetKey"
+        }
+      ],
+      "queryLogBenchmark": [
+        {
+          "memory_usage": "46642109",
+          "memory_usage_readable": "44.48 MiB",
+          "os_cpu_virtual_time": "42446",
+          "os_cpu_virtual_time_readable": "0 seconds, 42 milliseconds and 446 microseconds",
+          "read_bytes": "894913",
+          "read_bytes_readable": "873.94 KiB",
+          "read_rows": "19089",
+          "result_bytes": "1821",
+          "result_bytes_readable": "1.78 KiB",
+          "result_rows": "100"
+        },
+        {
+          "memory_usage": "46644389",
+          "memory_usage_readable": "44.48 MiB",
+          "os_cpu_virtual_time": "37479",
+          "os_cpu_virtual_time_readable": "0 seconds, 37 milliseconds and 479 microseconds",
+          "read_bytes": "894913",
+          "read_bytes_readable": "873.94 KiB",
+          "read_rows": "19089",
+          "result_bytes": "1821",
+          "result_bytes_readable": "1.78 KiB",
+          "result_rows": "100"
+        }
+      ],
+      "queryResultsBenchmark": [
+        {
+          "numResults": "100",
+          "resultsJson": "[\"ABCDE\",\"65RH3X2\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-109\",\"\",\"\",\"\",\"\",\"\",\"XLAN-100\",\"\",\"\",\"\",\"\",\"\",\"Dell Inc. LAN116\",\"\",\"\",\"\",\"XLAN-117\",\"\",\"\",\"\",\"\",\"XLAN-119\",\"\",\"XLAN-11\",\"Dell Inc.\",\"\",\"XLAN-111\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-113\",\"\",\"\",\"XLAN-124\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-12\",\"XLAN-120\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"Dell Inc. LAN123\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"]"
+        },
+        {
+          "numResults": "100",
+          "resultsJson": "[\"ABCDE\",\"65RH3X2\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-109\",\"\",\"\",\"\",\"\",\"\",\"XLAN-100\",\"\",\"\",\"\",\"\",\"\",\"Dell Inc. LAN116\",\"\",\"\",\"\",\"XLAN-117\",\"\",\"\",\"\",\"\",\"XLAN-119\",\"\",\"XLAN-11\",\"Dell Inc.\",\"\",\"XLAN-111\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-113\",\"\",\"\",\"XLAN-124\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"XLAN-12\",\"XLAN-120\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"Dell Inc. LAN123\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"]"
+        }
+      ]
+    },
+    "ModuleResultsMap": {
+      "cliBenchmark": null,
+      "explainBenchmark": null,
+      "queryLogBenchmark": null,
+      "queryResultsBenchmark": {
+        "areEqual": "true"
+      }
+    }
+  }
+}

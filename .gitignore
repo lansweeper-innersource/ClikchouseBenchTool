@@ -148,3 +148,6 @@ chbench_mac*
 
 # exe
 chbt*
+
+#images
+*.png

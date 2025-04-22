@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 )
 
 type cliBenchmarkResults struct {
@@ -18,6 +19,18 @@ type cliBenchmarkResults struct {
 	MiBs       float64
 	RPS        float64
 }
+
+type CliBenchmarkResultKeys string
+
+const (
+	CliQueryNameKey CliBenchmarkResultKeys = "query_name"
+	ResultMiBsKey   CliBenchmarkResultKeys = "resultMiBs"
+	ExecutionsKey   CliBenchmarkResultKeys = "executions"
+	QPSKey          CliBenchmarkResultKeys = "QPS"
+	ResultRpsKey    CliBenchmarkResultKeys = "resultRps"
+	MiBsKey         CliBenchmarkResultKeys = "MiBs"
+	RPSKeys         CliBenchmarkResultKeys = "RPS"
+)
 
 const CliBenchmarkName = "cliBenchmark"
 
@@ -48,7 +61,7 @@ func (qlb *CliBenchmark) Name() string {
 	return CliBenchmarkName
 }
 
-func (qlb *CliBenchmark) Run(ctx context.Context, queryParams map[string]any, query string) (map[string]string, error) {
+func (qlb *CliBenchmark) Run(ctx context.Context, queryParams map[string]any, queryName string, query string) (map[string]string, error) {
 	cliResults := cliBenchmarkResults{}
 	benchConfig := qlb.config
 	args := []string{
@@ -122,11 +135,16 @@ func (qlb *CliBenchmark) Run(ctx context.Context, queryParams map[string]any, qu
 		}
 	}
 	return map[string]string{
-		"resultMiBs": fmt.Sprintf("%f", cliResults.ResultMiBs),
-		"executions": fmt.Sprintf("%v", cliResults.Executions),
-		"QPS":        fmt.Sprintf("%f", cliResults.QPS),
-		"resultRps":  fmt.Sprintf("%f", cliResults.ResultRps),
-		"MiBs":       fmt.Sprintf("%f", cliResults.MiBs),
-		"RPS":        fmt.Sprintf("%f", cliResults.RPS),
+		string(CliQueryNameKey): queryName,
+		string(ResultMiBsKey):   fmt.Sprintf("%f", cliResults.ResultMiBs),
+		string(ExecutionsKey):   fmt.Sprintf("%d", cliResults.Executions),
+		string(QPSKey):          fmt.Sprintf("%f", cliResults.QPS),
+		string(ResultRpsKey):    fmt.Sprintf("%f", cliResults.ResultRps),
+		string(MiBsKey):         fmt.Sprintf("%f", cliResults.MiBs),
+		string(RPSKeys):         fmt.Sprintf("%f", cliResults.RPS),
 	}, nil
+}
+
+func (qlb *CliBenchmark) OnModuleEnd(results suite.BenchmarkResults) (map[string]string, error) {
+	return nil, nil
 }

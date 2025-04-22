@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/BurntSushi/toml"
 	"github.com/lansweeper/ClickhouseBenchTool/internal"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/benchmark"
+	benchmarkwriter "github.com/lansweeper/ClickhouseBenchTool/internal/benchmarkWriter"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/db"
 	"github.com/lansweeper/ClickhouseBenchTool/internal/suite"
 	"github.com/spf13/cobra"
@@ -54,7 +56,6 @@ var benchmarkCmd = &cobra.Command{
 			panic(err)
 		}
 
-		querylogBenchmark := benchmark.NewQueryLogBenchmark(conn)
 		explainBenchmark := benchmark.NewExplainBenchmark(conn)
 		cliBenchmark := benchmark.NewCliBenchmark(conn, benchmark.CliBenchmarkConfig{
 			PathToCli:  cliPath,
@@ -77,13 +78,17 @@ var benchmarkCmd = &cobra.Command{
 				ClickhouseCliPath: cliPath,
 				ClickHouseConfig:  clickHouseConfig,
 			},
-			suite.WithBenchmark(querylogBenchmark),
+			suite.WithBenchmark(benchmark.NewQueryLogBenchmark(conn)),
+			suite.WithBenchmark(benchmark.NewQueryResultsBenchmark(conn)),
+			suite.WithBenchmarkWrite(benchmarkwriter.NewMdLogWriter()),
 			suite.WithBenchmark(explainBenchmark),
 			suite.WithBenchmark(cliBenchmark),
 		)
 
 		results, err := benchmarkSuite.RunSuite(cmd.Context())
 		fmt.Println(results)
+		resultsJson, err := json.Marshal(results)
+		fmt.Println(string(resultsJson))
 		if err != nil {
 			panic(err)
 		}
