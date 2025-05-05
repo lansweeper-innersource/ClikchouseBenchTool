@@ -91,7 +91,7 @@ func (s *BenchmarkSuite) RunSuite(ctx context.Context) (SuiteResults, error) {
 					result, err := benchmark.Run(poolCtx, params, queryName, q.Query)
 					results[module.Name].BenchmarkResultsMap[benchmark.Name()][queryIndex] = result
 					if err != nil {
-						return fmt.Errorf("run benchmark: %w", err)
+						panic(fmt.Sprintf("run benchmark: %s", err))
 					}
 					bar.Add(1)
 					return nil
