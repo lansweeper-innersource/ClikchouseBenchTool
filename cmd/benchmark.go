@@ -50,7 +50,14 @@ var benchmarkCmd = &cobra.Command{
 			Username: viper.GetString("database.user"),
 			Password: viper.GetString("database.password"),
 			Secure:   viper.GetBool("database.secure"),
+			UseTLS:   true,
 		}
+
+		// Override UseTLS if explicitly set in config
+		if viper.IsSet("database.useTLS") {
+			clickHouseConfig.UseTLS = viper.GetBool("database.useTLS")
+		}
+
 		conn, err := db.GetClickHouse(cmd.Context(), clickHouseConfig)
 		if err != nil {
 			panic(err)

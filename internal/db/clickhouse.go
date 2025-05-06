@@ -15,9 +15,17 @@ type ClickHouseConfig struct {
 	Username string
 	Password string
 	Secure   bool
+	UseTLS   bool
 }
 
 func GetClickHouse(ctx context.Context, clickHouseConfig ClickHouseConfig) (clickhouse.Conn, error) {
+	var tlsConfig *tls.Config
+	if clickHouseConfig.UseTLS {
+		tlsConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{fmt.Sprintf("%s:%d", clickHouseConfig.Host, clickHouseConfig.Port)},
 		Auth: clickhouse.Auth{
@@ -36,9 +44,7 @@ func GetClickHouse(ctx context.Context, clickHouseConfig ClickHouseConfig) (clic
 		Debugf: func(format string, v ...interface{}) {
 			fmt.Printf(format, v)
 		},
-		TLS: &tls.Config{
-			InsecureSkipVerify: true,
-		},
+		TLS: tlsConfig,
 	})
 
 	if err != nil {
